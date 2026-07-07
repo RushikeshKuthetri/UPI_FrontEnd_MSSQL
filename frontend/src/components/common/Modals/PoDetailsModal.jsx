@@ -1,0 +1,199 @@
+import React, { useState } from 'react';
+import { X, Target, FileText, Globe, Folder, Upload, TableProperties, SquarePen, Split, Plus } from 'lucide-react';
+import Table1 from '../Table/Table';
+import BackButton from '../Form/Buttons/BackButton';
+import AddBomItemPOModal from './AddBomItemPOModal';
+import UploadFileModal from './UploadFileModal';
+import NextButton from '../Form/Buttons/NextButton';
+import ActionButton from '../Form/Buttons/ActionButton';
+import IconButton from '../Form/Buttons/IconButton';
+import Title from '../TitleAndLabel/Title';
+
+const MODAL_MOCK_DATA = Array.from({ length: 6 }, (_, i) => ({
+  id: i + 1,
+  material: 'FINECOAL',
+  storageLocation: 'BAU1',
+  movtType: '101',
+  batch: 'PYRO',
+  qc: 100,
+  quantity: 750,
+  correction: 0,
+  correctWf: 750,
+  moist: 0,
+  finalQuantity: 759,
+  uom: 'MT',
+  isoUom: 'MT',
+  unit1: 'MT',
+  isoUnit1: 'MT',
+  availableStock: 0,
+  remarks: '',
+}));
+
+const PoDetailsModal = ({ isOpen, onClose }) => {
+  const [isAddBomItemOpen, setIsAddBomItemOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  if (!isOpen) return null;
+
+  const columns = [
+    { key: 'material', label: 'Material' },
+    { key: 'storageLocation', label: 'Storage Location' },
+    { key: 'movtType', label: 'Movt Type' },
+    { key: 'batch', label: 'Batch' },
+    { key: 'qc', label: 'QC %' },
+    { key: 'quantity', label: 'Quantity' },
+    { key: 'correction', label: 'Correction' },
+    { key: 'correctWf', label: 'Correct W.F' },
+    { key: 'moist', label: 'Moist %' },
+    { key: 'finalQuantity', label: 'Final Quantity %' },
+    { key: 'uom', label: 'UOM' },
+    { key: 'isoUom', label: 'ISO UOM' },
+    { key: 'unit1', label: 'Unit 1' },
+    { key: 'isoUnit1', label: 'ISO Unit 1' },
+    { key: 'availableStock', label: 'Available Stock' },
+    {
+      key: 'remarks',
+      label: 'Remarks',
+      render: (_, row) => (
+        <input
+          type="text"
+          placeholder="Remark.."
+          className="border rounded px-2 py-1 text-xs w-[80px] bg-transparent outline-none focus:border-[#FD6E41]"
+          style={{ borderColor: 'var(--form-border, #E5E7EB)', color: 'var(--text-color, #000)' }}
+        />
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (_, row) => (
+        <div className="flex items-center justify-center gap-3">
+          <button className="text-[#8A38F5] hover:opacity-70 transition">
+            <SquarePen size={15} strokeWidth={2.5} />
+          </button>
+          <button className="text-[#20C997] hover:opacity-70 transition">
+            <Split size={15} strokeWidth={2.5} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="relative w-[95vw] max-w-[1400px] max-h-[95vh] overflow-y-auto rounded-2xl px-6 py-6 shadow-2xl flex flex-col"
+        style={{ background: 'var(--modal-bg, #F9FAFB)' }}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center mb-5">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-5  rounded-full"></div>
+
+            <Title label={"PO Details:"} />
+          </div>
+          <button
+            onClick={onClose}
+            className="transition hover:opacity-70"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* PO Info Card */}
+        <div
+          className="rounded-xl border px-4 py-3 flex flex-wrap items-center justify-between mb-6 shadow-sm gap-y-4"
+          style={{ background: 'var(--card-bg, #FFF)', borderColor: 'var(--form-border, #E5E7EB)' }}
+        >
+          {/* Item 1 */}
+          <div className="flex items-center gap-4 px-2 flex-1 min-w-[200px]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#FD6E41]" style={{ background: 'rgba(253, 110, 65, 0.1)' }}>
+              <Target size={20} />
+            </div>
+            <div>
+              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Process Order No.</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>00001327500</div>
+            </div>
+          </div>
+          <div className="hidden md:block h-10 w-px" style={{ background: 'var(--form-border, #E5E7EB)' }}></div>
+
+          {/* Item 2 */}
+          <div className="flex items-center gap-4 px-2 flex-1 min-w-[150px]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#F59E0B]" style={{ background: 'rgba(245, 158, 11, 0.1)' }}>
+              <FileText size={20} />
+            </div>
+            <div>
+              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Order Quality</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>3500 MT</div>
+            </div>
+          </div>
+          <div className="hidden md:block h-10 w-px" style={{ background: 'var(--form-border, #E5E7EB)' }}></div>
+
+          {/* Item 3 */}
+          <div className="flex items-center gap-4 px-2 flex-1 min-w-[150px]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#3B82F6]" style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
+              <Globe size={20} />
+            </div>
+            <div>
+              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Resource</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>UCLIML 1</div>
+            </div>
+          </div>
+          <div className="hidden md:block h-10 w-px" style={{ background: 'var(--form-border, #E5E7EB)' }}></div>
+
+          {/* Item 4 */}
+          <div className="flex items-center gap-4 px-2 flex-1 min-w-[200px]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#10B981]" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
+              <Folder size={20} />
+            </div>
+            <div>
+              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Material</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>FINECOAL Plant BA01</div>
+            </div>
+          </div>
+          <div className="hidden md:block h-10 w-px" style={{ background: 'var(--form-border, #E5E7EB)' }}></div>
+
+          {/* Item 5 */}
+          <div className="flex items-center gap-4 px-2 flex-1 min-w-[150px]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#F59E0B]" style={{ background: 'rgba(245, 158, 11, 0.1)' }}>
+              <FileText size={20} />
+            </div>
+            <div>
+              <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Posting Date</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>03 March 2026</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Add Material & Tools Row */}
+        <div className="flex justify-between items-center mb-4">
+          <ActionButton icon={Plus} label="Add Material" onClick={() => setIsAddBomItemOpen(true)} />
+          <div className="flex items-center gap-4 var(--submit-button-bg)">
+            <IconButton icon={Upload} onClick={() => setIsUploadModalOpen(true)} tooltip="Upload Excel" />
+            <IconButton icon={TableProperties} onClick={() => alert("Table Properties clicked")} tooltip="Table Properties" />
+          </div>
+        </div>
+
+        {/* Table Area */}
+        <div className="flex-grow w-full overflow-hidden">
+          <Table1 columns={columns} data={MODAL_MOCK_DATA} />
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex justify-end gap-3 mt-4">
+          <BackButton onClick={onClose} label="  Skip and Close" />
+          <NextButton onClick={onClose} label="Validate and Close" className='' />
+        </div>
+
+      </div>
+
+      <AddBomItemPOModal isOpen={isAddBomItemOpen} onClose={() => setIsAddBomItemOpen(false)} />
+      <UploadFileModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
+    </div>
+  );
+};
+
+export default PoDetailsModal;
