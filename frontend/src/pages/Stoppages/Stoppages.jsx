@@ -13,6 +13,7 @@ import UploadFileModal from '../../components/Common/Modals/UploadFileModal';
 import SearchBar from '../../components/Common/SearchBar/SearchBar';
 import { CalendarCheck, ClockFading, SendHorizontal, Split, SquarePen, Upload, X, Trash2, Plus, PersonStanding } from 'lucide-react';
 import api from '../../api/axios';
+import { FaExchangeAlt } from "react-icons/fa";
 
 function getYesterday() {
   const d = new Date();
@@ -38,6 +39,12 @@ export default function Stoppages() {
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
+
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({
+    WERKS: '', ARBPL: '', Line: '', Material: '', StartTime: null, EndTime: null
+  });
+  const [addFormLines, setAddFormLines] = useState([]);
 
   const [openEventsOpen, setOpenEventsOpen] = useState(false);
   const [openEventsRows, setOpenEventsRows] = useState([]);
@@ -149,6 +156,30 @@ export default function Stoppages() {
       fetchData();
     } catch (err) {
       alert(err.response?.data?.message || 'Update failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddSubmit = async () => {
+    if (!addForm.WERKS || !addForm.ARBPL || !addForm.Line || !addForm.StartTime || !addForm.EndTime) {
+      alert('Please fill out all required fields.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const payload = {
+        ...addForm,
+        StartTime: addForm.StartTime.toISOString(),
+        EndTime: addForm.EndTime.toISOString(),
+      };
+      const { data } = await api.post('/stoppages/create-from-ws', payload);
+      alert(data.message || 'Record inserted successfully');
+      setAddOpen(false);
+      setAddForm({ WERKS: '', ARBPL: '', Line: '', Material: '', StartTime: null, EndTime: null });
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Insert failed');
     } finally {
       setSaving(false);
     }
@@ -318,7 +349,7 @@ export default function Stoppages() {
     <div className="w-full h-full flex flex-col">
       {/* Page Title */}
       <div className="flex justify-between items-center mb-3 shrink-0">
-        <Title label="Stoppage Entry" />
+        <Title label="Stoppage Entry" moduleName="Transaction" icon={FaExchangeAlt} />
       </div>
 
       {/* Filter Card */}
@@ -365,9 +396,10 @@ export default function Stoppages() {
       </div>
 
       {/* Actions row */}
-      <div className="flex items-center justify-between mt-4 shrink-0">
+      <div className="flex items-center justify-between mt-2 shrink-0">
         <div className="flex items-center justify-start gap-3">
           <ActionButton icon={SendHorizontal} label="Send to SAP" onClick={handleSendToSAP} />
+          <ActionButton icon={Plus} label="Add Record" onClick={() => setAddOpen(true)} />
         </div>
 
         <div className="flex items-center justify-end gap-4 mr-2">
@@ -386,11 +418,11 @@ export default function Stoppages() {
         </div>
       </div>
 
-      <div className="flex flex-col w-full mt-2 rounded-lg overflow-hidden p-2 shrink-0">
+      <div className="flex flex-col w-full mt-2 rounded-lg overflow-hidden flex-1 min-h-0">
         {loading ? (
           <div className="p-8 text-center text-sm text-gray-500">Loading...</div>
         ) : (
-          <Table1 columns={columns} data={displayedRows} showPagination={true} />
+          <Table1 columns={columns} data={displayedRows} showPagination={true} defaultRowsPerPage={10} />
         )}
       </div>
 
@@ -402,6 +434,79 @@ export default function Stoppages() {
       <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden onChange={(e) => { if (e.target.files[0]) handleUpload(e.target.files[0]); e.target.value = ''; }} />
 
       {/* Tailwind Modals */}
+      {addOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-[500px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Add Stoppage Entry</h2>
+              <button onClick={() => setAddOpen(false)} className="hover:opacity-70" style={{ color: 'var(--card-subtle)' }}><X size={20} /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <FormLabel required>Plant (WERKS)</FormLabel>
+                <SelectInput
+                  options={plants.map(p => ({ label: p.PlantName || p.PlantCode, value: p.PlantCode }))}
+                  value={addForm.WERKS}
+                  onChange={(e) => {
+                    const pc = e.target.value;
+                    setAddForm(f => ({ ...f, WERKS: pc, Line: '' }));
+                    if (pc) {
+                      api.get('/stoppages/lines', { params: { plantCode: pc } })
+                        .then(({ data }) => setAddFormLines(data.map(l => ({ label: l.Descr || l.UnitCode, value: l.UnitCode }))))
+                        .catch(() => setAddFormLines([]));
+                    } else {
+                      setAddFormLines([]);
+                    }
+                  }}
+                  placeholder="Select Plant"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <FormLabel required>Line</FormLabel>
+                <SelectInput
+                  options={addFormLines}
+                  value={addForm.Line}
+                  onChange={(e) => setAddForm(f => ({ ...f, Line: e.target.value }))}
+                  placeholder="Select Line"
+                />
+              </div>
+              <div className="flex flex-col gap-1 col-span-2">
+                <FormLabel required>Resource (ARBPL)</FormLabel>
+                <TextInput value={addForm.ARBPL} onChange={(e) => setAddForm(f => ({ ...f, ARBPL: e.target.value }))} placeholder="Enter Resource Name" />
+              </div>
+              <div className="flex flex-col gap-1 col-span-2">
+                <FormLabel>Material</FormLabel>
+                <TextInput value={addForm.Material} onChange={(e) => setAddForm(f => ({ ...f, Material: e.target.value }))} placeholder="Enter Material" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <FormLabel required>Start Time</FormLabel>
+                <DateTimePicker
+                  value={addForm.StartTime}
+                  onChange={(date) => setAddForm(f => ({ ...f, StartTime: date }))}
+                  placeholder="Select Start Time"
+                  showTime={true}
+                  dateFormat="dd/MM/yyyy h:mm aa"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <FormLabel required>End Time</FormLabel>
+                <DateTimePicker
+                  value={addForm.EndTime}
+                  onChange={(date) => setAddForm(f => ({ ...f, EndTime: date }))}
+                  placeholder="Select End Time"
+                  showTime={true}
+                  dateFormat="dd/MM/yyyy h:mm aa"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setAddOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: 'var(--form-border)', color: 'var(--text-color)' }}>Cancel</button>
+              <button onClick={handleAddSubmit} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--submit-button-bg)', color: '#000' }}>{saving ? 'Saving...' : 'Save'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-[500px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>

@@ -8,6 +8,8 @@ import Table1 from '../../components/Common/Table/Table';
 import { Plus, SquarePen, Search, X } from 'lucide-react';
 import api from '../../api/axios';
 import { Snackbar, Alert } from '@mui/material';
+import { IoSettingsOutline } from "react-icons/io5";
+import SearchBar from '../../components/Common/SearchBar/SearchBar';
 
 const AVAILABLE_MENUS = [
   'Grade Change', 'Stoppage Entry', 'Meter Reading', 'Process Order Confirm',
@@ -112,20 +114,21 @@ export default function RoleMenuMapping() {
   ];
 
   return (
-    <div className="w-full h-full flex flex-col px-2 py-2">
+    <div className="w-full h-full flex flex-col ">
      
 
-      <div className="flex items-center justify-between mb-4">
-        <Title label="Role Menu Mapping" />
-        <div className="relative w-[220px]">
+      <div className="flex items-center justify-between mb-2">
+        <Title label="Role Menu Mapping" moduleName="Manage Admin" icon={IoSettingsOutline} />
+        {/* <div className="relative w-[220px]">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
-            className="w-full h-[36px] pl-8 pr-3 rounded-lg border border-gray-300 text-sm outline-none bg-white" />
-        </div>
+       className="w-full h-[36px] pl-8 pr-3 rounded-lg border border-[var(--search-border)] text-sm outline-none bg-[var(--search-bg)] text-[var(--text-color)] placeholder:text-[var(--search-placeholder)]"/>
+        </div> */}
+        <SearchBar value={search} onChange={setSearch} placeholder="Search..." />
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex-1 min-h-0 flex flex-col">
-        <div className="flex justify-end mb-4">
+      <div className="rounded-xl border border-[var(--card-border-main)] shadow-sm p-2 flex-1 min-h-0 flex flex-col">
+        <div className="flex justify-end mb-3">
           <ActionButton icon={Plus} label="Add Role Menu" onClick={handleAdd} />
         </div>
 
@@ -181,8 +184,7 @@ export default function RoleMenuMapping() {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setDialogOpen(false)} className="px-4 py-1.5 rounded-md border border-gray-300 text-sm font-medium hover:bg-gray-100 transition">Close</button>
-              <SubmitButton onClick={handleSave} loading={saving}>Save</SubmitButton>
+   <button onClick={() => setDialogOpen(false)} className="px-4 py-1.5 rounded-md border border-[var(--form-border)] text-sm font-medium hover:bg-[var(--button-hover-bg)] text-[var(--text-color)] transition">Close</button>              <SubmitButton onClick={handleSave} loading={saving}>Save</SubmitButton>
             </div>
           </div>
         </div>

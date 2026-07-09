@@ -12,8 +12,9 @@ import TextInput from '../../components/Common/Form/Inputs/TextInput';
 import Table1 from '../../components/Common/Table/Table';
 import Pagination from '../../components/Common/Pagination/Pagination';
 import UploadFileModal from '../../components/Common/Modals/UploadFileModal';
-import { CalendarCheck, Check, ClockFading, Merge, PersonStanding, SendHorizontal, SquarePen, Upload, X } from 'lucide-react';
+import { CalendarCheck, Check, ClockFading, Merge, PersonStanding, SendHorizontal, SquarePen, Upload, X, Download, Plus } from 'lucide-react';
 import api from '../../api/axios';
+import { FaExchangeAlt } from "react-icons/fa";
 
 function getYesterday() {
   const d = new Date();
@@ -49,6 +50,12 @@ export default function GradeChange() {
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState(EMPTY_EDIT);
   const [saving, setSaving] = useState(false);
+
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({
+    PlantCode: '', ResourceName: '', Line: '', Material: '', StartTime: null, EndTime: null
+  });
+  const [addFormLines, setAddFormLines] = useState([]);
 
   const [openEventsOpen, setOpenEventsOpen] = useState(false);
   const [openEventsRows, setOpenEventsRows] = useState([]);
@@ -155,6 +162,30 @@ export default function GradeChange() {
     }
   };
 
+  const handleAddSubmit = async () => {
+    if (!addForm.PlantCode || !addForm.ResourceName || !addForm.Material || !addForm.Line || !addForm.StartTime || !addForm.EndTime) {
+      alert('Please fill out all required fields.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const payload = {
+        ...addForm,
+        StartTime: addForm.StartTime.toISOString(),
+        EndTime: addForm.EndTime.toISOString(),
+      };
+      const { data } = await api.post('/grade-change/create-from-ws', payload);
+      alert(data.message || 'Record inserted successfully');
+      setAddOpen(false);
+      setAddForm({ PlantCode: '', ResourceName: '', Line: '', Material: '', StartTime: null, EndTime: null });
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Insert failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleMerge = () => {
     if (selected.size !== 2) {
       alert('Select exactly 2 records to merge');
@@ -238,6 +269,23 @@ export default function GradeChange() {
     }
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await api.get('/grade-change/template', {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'GradeChange_Upload_Template.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      alert('Download failed');
+    }
+  };
+
   const columns = [
     {
       key: 'selected',
@@ -293,7 +341,7 @@ export default function GradeChange() {
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex justify-between items-center mb-3 shrink-0">
-        <Title label="Grade Change" />
+        <Title label="Grade Change" moduleName="Transaction" icon={FaExchangeAlt} />
       </div>
 
       {/* Filters */}
@@ -340,9 +388,10 @@ export default function GradeChange() {
       </div>
 
       {/* Actions row */}
-      <div className="flex items-center justify-between mt-4 shrink-0">
+      <div className="flex items-center justify-between mt-2 shrink-0">
         <div className="flex items-center justify-start gap-3">
           <ActionButton icon={SendHorizontal} label="Send to SAP" onClick={handleSendToSAP} />
+          <ActionButton icon={Plus} label="Add Record" onClick={() => setAddOpen(true)} />
           <label className="text-[var(--text-color)] text-sm font-medium">
             {selected.size} items selected
           </label>
@@ -351,14 +400,14 @@ export default function GradeChange() {
         <div className="flex items-center justify-end gap-4 mr-2">
           <IconButton icon={ClockFading} tooltip="Shift Duration" />
           <IconButton icon={Merge} tooltip="Merge" onClick={handleMerge} />
-          <IconButton icon={PersonStanding} tooltip="Run of Job" onClick={handleRunAfJob} />
+          {/* <IconButton icon={PersonStanding} tooltip="Run of Job" onClick={handleRunAfJob} /> */}
           <IconButton icon={Upload} tooltip="Upload" onClick={() => setIsUploadModalOpen(true)} />
           <IconButton icon={CalendarCheck} tooltip="Open Event" onClick={handleOpenEvents} />
         </div>
       </div>
 
-      <div className="flex flex-col w-full mt-2 rounded-lg  overflow-hidden p-2 shrink-0">
-        <Table1 columns={columns} data={rows} showPagination={true} />
+      <div className="flex flex-col w-full mt-2 rounded-lg  overflow-hidden flex-1 min-h-0">
+        <Table1 columns={columns} data={rows} showPagination={true} defaultRowsPerPage={10} />
       </div>
 
       {resourceDuration.length > 0 && (
@@ -378,7 +427,80 @@ export default function GradeChange() {
       />
       <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden onChange={(e) => { if (e.target.files[0]) handleUpload(e.target.files[0]); e.target.value = ''; }} />
 
-      {/* Tailwind Modals for Edit, Merge, OpenEvents */}
+      {/* Tailwind Modals for Edit, Merge, OpenEvents, Add */}
+      {addOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-[500px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Add Grade Change</h2>
+              <button onClick={() => setAddOpen(false)} className="hover:opacity-70" style={{ color: 'var(--card-subtle)' }}><X size={20} /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <FormLabel required>Plant</FormLabel>
+                <SelectInput
+                  options={plants}
+                  value={addForm.PlantCode}
+                  onChange={(e) => {
+                    const pc = e.target.value;
+                    setAddForm(f => ({ ...f, PlantCode: pc, Line: '' }));
+                    if (pc) {
+                      api.get('/grade-change/lines', { params: { plantCode: pc } })
+                        .then(({ data }) => setAddFormLines(data.map(l => ({ label: l, value: l }))))
+                        .catch(() => setAddFormLines([]));
+                    } else {
+                      setAddFormLines([]);
+                    }
+                  }}
+                  placeholder="Select Plant"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <FormLabel required>Line</FormLabel>
+                <SelectInput
+                  options={addFormLines}
+                  value={addForm.Line}
+                  onChange={(e) => setAddForm(f => ({ ...f, Line: e.target.value }))}
+                  placeholder="Select Line"
+                />
+              </div>
+              <div className="flex flex-col gap-1 col-span-2">
+                <FormLabel required>Resource Name</FormLabel>
+                <TextInput value={addForm.ResourceName} onChange={(e) => setAddForm(f => ({ ...f, ResourceName: e.target.value }))} placeholder="Enter Resource Name" />
+              </div>
+              <div className="flex flex-col gap-1 col-span-2">
+                <FormLabel required>Material</FormLabel>
+                <TextInput value={addForm.Material} onChange={(e) => setAddForm(f => ({ ...f, Material: e.target.value }))} placeholder="Enter Material" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <FormLabel required>Start Time</FormLabel>
+                <DateTimePicker
+                  value={addForm.StartTime}
+                  onChange={(date) => setAddForm(f => ({ ...f, StartTime: date }))}
+                  placeholder="Select Start Time"
+                  showTime={true}
+                  dateFormat="dd/MM/yyyy h:mm aa"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <FormLabel required>End Time</FormLabel>
+                <DateTimePicker
+                  value={addForm.EndTime}
+                  onChange={(date) => setAddForm(f => ({ ...f, EndTime: date }))}
+                  placeholder="Select End Time"
+                  showTime={true}
+                  dateFormat="dd/MM/yyyy h:mm aa"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setAddOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: 'var(--form-border)', color: 'var(--text-color)' }}>Cancel</button>
+              <button onClick={handleAddSubmit} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--submit-button-bg)', color: '#000' }}>{saving ? 'Saving...' : 'Save'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-[500px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>

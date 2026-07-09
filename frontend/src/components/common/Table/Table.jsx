@@ -24,7 +24,7 @@ const Table1 = ({
   return (
     <div className="w-full h-full flex flex-col gap-3 min-h-0">
       {/* Adjust border color according to theme */}
-      <div className="w-full overflow-auto rounded-xl border-t border-l border-r border-b border-[var(--form-border)] custom-scrollbar">
+      <div className="w-full flex-1 min-h-0 overflow-auto rounded-xl border-t border-l border-r border-b border-[var(--form-border)] custom-scrollbar">
 
         <table className="w-full border-collapse">
 

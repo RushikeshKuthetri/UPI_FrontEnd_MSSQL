@@ -1,8 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 * { box-sizing: border-box; }
 
 body {
@@ -70,12 +71,15 @@ body {
   --card-border-main: #E5DFDF;
   --modal-bg:#F1F0EE;
   --modal-button-tab:#FFFFFF;
+  --select-input-value: #111111;
+  --select-input-hover: #F1F5F9;
+  --select-input: #EAEAEA;
 }
 
 /* ── Dark Theme ────────────────────────────────────── */
 .dark {
   /* ✅ Date & Time Picker */
-  --card-bg:#1D2B20;
+ --card-bg:#00000066;
   --card-text:#FBFBFC;
   --picker-bg: #1f2937;
   --header-text-color: #29292B;
@@ -114,6 +118,9 @@ body {
   --modal-bg:#212323;
   --modal-button-tab:#494B4D;
   --card-border: #FD9F35;
+  --select-input-value: #FFFFFF;
+  --select-input-hover: #424345;
+  --select-input: #353838;
 }
 
 /* ── Custom Shadows ────────────────────────────────── */
@@ -174,6 +181,16 @@ body {
   border-radius: 4px;
 }
 
+.react-datepicker__day--disabled {
+  color: #a0a0a0 !important;
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+}
+
+.react-datepicker__day--disabled:hover {
+  background-color: transparent !important;
+}
+
 .react-datepicker__day--selected,
 .react-datepicker__day--keyboard-selected {
   background-color: var(--picker-accent) !important;
@@ -208,6 +225,37 @@ body {
 .react-datepicker__year-option--selected_year {
   background-color: var(--picker-accent) !important;
   color: #fff !important;
+}
+
+/* Fix year dropdown arrows that get hidden by Tailwind's border reset */
+.react-datepicker__year-option:first-child a.react-datepicker__navigation--years-upcoming::before,
+.react-datepicker__navigation--years-upcoming::before {
+  content: "" !important;
+  display: block !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-top: 2px solid var(--text-color) !important;
+  border-left: 2px solid var(--text-color) !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  transform: rotate(45deg) !important;
+  margin: 12px auto 6px !important;
+  position: static !important;
+}
+
+.react-datepicker__year-option:last-child a.react-datepicker__navigation--years-previous::before,
+.react-datepicker__navigation--years-previous::before {
+  content: "" !important;
+  display: block !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-bottom: 2px solid var(--text-color) !important;
+  border-right: 2px solid var(--text-color) !important;
+  border-top: none !important;
+  border-left: none !important;
+  transform: rotate(45deg) !important;
+  margin: 8px auto 4px !important;
+  position: static !important;
 }
 
 /* Time panel */
@@ -260,3 +308,49 @@ body {
 .dark .react-datepicker__month-option .react-datepicker__navigation::before {
   border-color: var(--picker-accent) !important;
 }
+
+/* -- Custom Checkbox (Global) ------------------------ */
+input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-color: transparent !important;
+  margin: 0 !important;
+  width: 18px !important;
+  height: 18px !important;
+  border: 1.5px solid var(--form-border) !important;
+  border-radius: 4px !important;
+  display: inline-block !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease-in-out !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+}
+
+.dark input[type="checkbox"] {
+  border-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #00bfff !important;
+  border-color: #00bfff !important;
+}
+
+input[type="checkbox"]::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) scale(0) !important;
+  width: 13px !important;
+  height: 13px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+input[type="checkbox"]:checked::after {
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+

@@ -207,7 +207,7 @@ const AddNewModal = ({
             <FormLabel required>Impact on Dispatch</FormLabel>
             <SelectInput
               placeholder="Select Impact in Dispatch"
-              options={[{ label: 'Yes', value: 'Yes' }, { label: 'No', value: 'No' }]}
+              options={[{ label: 'Yes', value: 'Y' }, { label: 'No', value: 'N' }]}
               value={impact}
               onChange={(e) => setImpact(e.target.value)}
               error={errors.impact}

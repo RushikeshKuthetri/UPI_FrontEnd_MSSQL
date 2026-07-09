@@ -35,7 +35,7 @@ export default function Layout() {
           display: "flex",
          
           color: "var(--text-color)",
-          marginTop: 4,
+          marginTop: 0,
         }}
       >
         <Sidebar
@@ -57,7 +57,7 @@ export default function Layout() {
           }}
         >
           {/* Breadcrumb */}
-          <div className="my-2 mx-3"
+          <div className="my-0.5 mx-3"
             style={{
             
               display: "flex",

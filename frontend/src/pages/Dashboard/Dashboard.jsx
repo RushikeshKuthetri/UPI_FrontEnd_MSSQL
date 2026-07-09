@@ -5,6 +5,8 @@ import Table1 from '../../components/Common/Table/Table';
 import SearchInput from '../../components/Common/Form/Inputs/SearchInput';
 import SelectInput from '../../components/Common/Form/Inputs/SelectInput';
 import api from '../../api/axios';
+import Title from '../../components/Common/TitleAndLabel/Title';
+
 
 function fmtDate(val) {
   if (!val) return '';
@@ -56,6 +58,7 @@ export default function Dashboard() {
 
   return (
     <div className="w-full h-full flex flex-col gap-4">
+      <Title label="Dashboard" />
       {/* ── 4 Separate Hit Counter Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Cards
@@ -93,7 +96,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Module Wise Data Summary ── */}
-      <div className="bg-[var(--card-bg)] rounded-lg shadow-sm border border-[var(--form-border)] overflow-hidden flex flex-col">
+      <div className=" rounded-lg shadow-sm border border-[var(--form-border)] overflow-hidden flex flex-col">
         {/* Yellow header banner */}
         <div className="bg-gradient-to-r from-orange-400 to-orange-300 px-4 py-3 rounded-t-lg">
           <h3 className="text-[14px] font-semibold text-black m-0">Module wise data summary</h3>
@@ -124,9 +127,9 @@ export default function Dashboard() {
 
         {/* Table */}
         <div className="p-2 overflow-auto">
-          <Table1 
-            columns={columns} 
-            data={filtered} 
+          <Table1
+            columns={columns}
+            data={filtered}
             showPagination={true}
           />
         </div>

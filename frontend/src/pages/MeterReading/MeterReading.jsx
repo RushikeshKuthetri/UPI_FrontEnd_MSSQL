@@ -9,8 +9,9 @@ import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import ActionButton from '../../components/Common/Form/Buttons/ActionButton';
 import IconButton from '../../components/Common/Form/Buttons/IconButton';
 import Table1 from '../../components/Common/Table/Table';
-import { PersonStanding, SendHorizontal, Sigma, SquarePen, Upload } from 'lucide-react';
+import { PersonStanding, SendHorizontal, Sigma, SquarePen, Upload, Check, X } from 'lucide-react';
 import api from '../../api/axios';
+import { FaExchangeAlt } from "react-icons/fa";
 
 function getYesterday() {
   const d = new Date();
@@ -107,7 +108,7 @@ export default function MeterReading() {
       setEditingRowId(null);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Update failed');
+      console.error(err.response?.data?.message || 'Update failed');
     } finally {
       setSaving(false);
     }
@@ -127,7 +128,7 @@ export default function MeterReading() {
               type="number" 
               value={editValue} 
               onChange={(e) => setEditValue(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 w-24 text-sm outline-none"
+              className="border border-[var(--form-border)] bg-[var(--search-bg)] text-[var(--text-color)] rounded px-2 py-1 w-24 text-sm outline-none"
               autoFocus
             />
           );
@@ -143,11 +144,19 @@ export default function MeterReading() {
         if (editingRowId === row.MeterId) {
           return (
             <div className="flex gap-2 justify-center">
-              <button onClick={() => handleSaveEdit(row)} className="text-green-600 font-medium hover:opacity-70 text-[13px]">
-                Save
+              <button 
+                onClick={() => handleSaveEdit(row)} 
+                className="text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 transition hover:bg-green-600/10 p-1.5 rounded-full flex items-center justify-center"
+                title="Save"
+              >
+                <Check size={18} strokeWidth={2.5} />
               </button>
-              <button onClick={() => setEditingRowId(null)} className="text-red-600 font-medium hover:opacity-70 text-[13px]">
-                Cancel
+              <button 
+                onClick={() => setEditingRowId(null)} 
+                className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 transition hover:bg-red-600/10 p-1.5 rounded-full flex items-center justify-center"
+                title="Cancel"
+              >
+                <X size={18} strokeWidth={2.5} />
               </button>
             </div>
           );
@@ -176,7 +185,7 @@ export default function MeterReading() {
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex justify-between items-center mb-3 shrink-0">
-        <Title label="Meter Reading" />
+        <Title label="Meter Reading" moduleName="Transaction" icon={FaExchangeAlt} />
       </div>
 
       <div className="relative z-20 flex w-full flex-wrap items-end justify-start gap-4 px-4 py-4 rounded-xl border border-[var(--form-border)] shadow-sm shrink-0">
@@ -227,7 +236,7 @@ export default function MeterReading() {
 
       {showTable && (
         <>
-          <div className="flex my-4 items-center justify-between shrink-0">
+          <div className="flex mt-3 items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <ActionButton icon={SendHorizontal} label="Send to SAP" onClick={handleSendToSAP} />
             </div>
@@ -241,7 +250,7 @@ export default function MeterReading() {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 w-full overflow-x-auto">
+          <div className="flex-1 min-h-0 w-full overflow-x-auto mt-2">
             {loading ? (
               <div className="flex items-center justify-center h-40">Loading...</div>
             ) : (

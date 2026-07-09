@@ -11,6 +11,7 @@ import Table1 from '../../components/Common/Table/Table';
 import { Plus, SquarePen } from 'lucide-react';
 import api from '../../api/axios';
 import AddNewModal from '../../components/Common/Modals/AddNewModal';
+import { FaExchangeAlt } from "react-icons/fa";
 
 function getYesterday() {
   const d = new Date();
@@ -35,7 +36,7 @@ export default function StoppageAlert() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showTable, setShowTable] = useState(false);
-  
+
   const [plants, setPlants] = useState([]);
   const [lines, setLines] = useState([]);
   const [stoppageTypes, setStoppageTypes] = useState([]);
@@ -49,9 +50,9 @@ export default function StoppageAlert() {
   const [initialData, setInitialData] = useState(null);
 
   useEffect(() => {
-    api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => {});
-    api.get('/stoppage-alert/clusters').then(() => {}).catch(() => {});
-    api.get('/stoppages/types').then(({ data }) => setStoppageTypes(data)).catch(() => {});
+    api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => { });
+    api.get('/stoppage-alert/clusters').then(() => { }).catch(() => { });
+    api.get('/stoppages/types').then(({ data }) => setStoppageTypes(data)).catch(() => { });
   }, []);
 
   const activePlant = filters.plantCode;
@@ -83,10 +84,10 @@ export default function StoppageAlert() {
     try {
       const { data } = await api.get('/stoppage-alert', { params: filters });
       setRows(data);
-    } catch { 
-      setRows([]); 
-    } finally { 
-      setLoading(false); 
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -112,7 +113,7 @@ export default function StoppageAlert() {
       setIsModalOpen(false);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Save failed');
+      console.error(err.response?.data?.message || 'Save failed');
     }
   };
 
@@ -136,10 +137,10 @@ export default function StoppageAlert() {
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex justify-between items-center mb-3 shrink-0">
-        <Title label="Stoppage Alert" />
+        <Title label="Stoppage Alert" moduleName="Transaction" icon={FaExchangeAlt} />
       </div>
 
-      <div className="relative z-20 flex w-full flex-wrap items-end justify-start gap-4 px-4 py-3.5 rounded-xl border border-[var(--form-border)] shrink-0">
+      <div className="relative z-20 flex w-full flex-wrap items-end justify-start gap-4 px-4 py-4 rounded-xl border border-[var(--form-border)] shrink-0">
         <div className="flex flex-col gap-1 w-[230px]">
           <FormLabel required>Select Date</FormLabel>
           <DateTimePicker
@@ -183,7 +184,7 @@ export default function StoppageAlert() {
           <ResetButton onClick={handleReset} />
           <SubmitButton onClick={fetchData} />
         </div>
-        
+
         {cluster && (
           <div className="ml-auto text-sm font-semibold text-[var(--title)] mb-2">
             Cluster : {cluster}
@@ -193,11 +194,11 @@ export default function StoppageAlert() {
 
       {showTable && (
         <>
-          <div className="flex my-3 items-center justify-start gap-2 shrink-0">
+          <div className="flex mt-3 items-center justify-start gap-2 shrink-0">
             <ActionButton icon={Plus} label="Add new" onClick={openNew} />
           </div>
 
-          <div className="flex-1 min-h-0 w-full overflow-x-auto">
+          <div className="flex-1 min-h-0 w-full mt-2 overflow-x-auto">
             {loading ? (
               <div className="flex items-center justify-center h-40">Loading...</div>
             ) : (

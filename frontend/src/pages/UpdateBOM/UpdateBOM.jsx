@@ -12,6 +12,8 @@ import BackButton from '../../components/Common/Form/Buttons/BackButton';
 import { Plus, X } from 'lucide-react';
 import { Alert, Snackbar } from '@mui/material';
 import api from '../../api/axios';
+import { FaExchangeAlt } from "react-icons/fa";
+import SearchBar from '../../components/Common/SearchBar/SearchBar';
 
 const EMPTY_BOM = {
   WERKS: '', Resource: '', Material: '', Goods: '',
@@ -26,14 +28,15 @@ export default function UpdateBOM() {
   const [resources, setResources] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [filter, setFilter] = useState({ plantCode: '', line: '', resource: '', material: '' });
-  
+  const [searchQuery, setSearchQuery] = useState('');
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_BOM);
   const [saving, setSaving] = useState(false);
   const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
 
   useEffect(() => {
-    api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => {});
+    api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => { });
   }, []);
 
   const loadLines = async (plantCode) => {
@@ -62,6 +65,7 @@ export default function UpdateBOM() {
 
   const handleReset = () => {
     setFilter({ plantCode: '', line: '', resource: '', material: '' });
+    setSearchQuery('');
     setRows([]);
   };
 
@@ -76,10 +80,10 @@ export default function UpdateBOM() {
         params: { plantCode: filter.plantCode, resource: filter.resource, material: filter.material },
       });
       setRows(data);
-    } catch { 
-      setRows([]); 
-    } finally { 
-      setLoading(false); 
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,23 +118,23 @@ export default function UpdateBOM() {
       handleSearch();
     } catch (err) {
       setSnack({ open: true, msg: err.response?.data?.message || 'Save failed', severity: 'error' });
-    } finally { 
-      setSaving(false); 
+    } finally {
+      setSaving(false);
     }
   };
 
   const columns = [
     { key: 'Goods', label: 'Goods' },
-    { 
-      key: 'isBaseMaterial', 
+    {
+      key: 'isBaseMaterial',
       label: 'Base Material',
       center: true,
       render: (_, row) => (
-        <input 
-          type="checkbox" 
-          checked={!!row.isBaseMaterial} 
-          readOnly 
-          className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500" 
+        <input
+          type="checkbox"
+          checked={!!row.isBaseMaterial}
+          readOnly
+          className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
         />
       )
     },
@@ -139,20 +143,24 @@ export default function UpdateBOM() {
       label: 'Visible',
       center: true,
       render: (_, row) => (
-        <input 
-          type="checkbox" 
-          checked={!!row.isVisible} 
-          onChange={() => handleVisibilityToggle(row)} 
-          className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 cursor-pointer" 
+        <input
+          type="checkbox"
+          checked={!!row.isVisible}
+          onChange={() => handleVisibilityToggle(row)}
+          className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
         />
       )
     }
   ];
 
+  const filteredRows = rows.filter(row =>
+    !searchQuery || row.Goods?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex justify-between items-center mb-3 shrink-0">
-        <Title label="Update PO BOM" />
+        <Title label="Update PO BOM" moduleName="Transaction" icon={FaExchangeAlt} />
       </div>
 
       <div className="relative z-20 flex w-full flex-wrap items-end justify-start gap-4 px-4 py-4 rounded-xl border border-[var(--form-border)] shadow-sm shrink-0 ">
@@ -202,39 +210,47 @@ export default function UpdateBOM() {
         </div>
       </div>
 
-      <div className="mt-4 mb-2 shrink-0">
-        <ActionButton 
-          icon={Plus} 
-          label="Add BOM Item" 
+      <div className="mt-2 mb-2 shrink-0 flex justify-between items-center">
+        <ActionButton
+          icon={Plus}
+          label="Add BOM Item"
           disabled={!filter.plantCode || !filter.resource || !filter.material}
-          onClick={() => { 
-            setForm({ 
-              ...EMPTY_BOM, 
-              WERKS: filter.plantCode, 
-              Line: filter.line, 
-              Resource: filter.resource, 
-              Material: filter.material 
-            }); 
-            setDialogOpen(true); 
-          }} 
+          onClick={() => {
+            setForm({
+              ...EMPTY_BOM,
+              WERKS: filter.plantCode,
+              Line: filter.line,
+              Resource: filter.resource,
+              Material: filter.material
+            });
+            setDialogOpen(true);
+          }}
         />
+        {/* <div className="w-[300px]">
+          <TextInput
+            placeholder="Search Goods..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div> */}
+        <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search Goods..." />
       </div>
 
       <div className="flex-1 min-h-0 w-full overflow-x-auto">
         {loading ? (
           <div className="flex items-center justify-center h-40">Loading...</div>
         ) : (
-          <Table1 columns={columns} data={rows} showPagination={true} defaultRowsPerPage={20} />
+          <Table1 columns={columns} data={filteredRows} showPagination={true} defaultRowsPerPage={20} />
         )}
       </div>
 
       {/* Add BOM Dialog */}
       {dialogOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
           onClick={(e) => e.target === e.currentTarget && setDialogOpen(false)}
         >
-          <div 
+          <div
             className="relative w-[600px] max-w-[95vw] rounded-2xl px-8 py-6 shadow-2xl flex flex-col"
             style={{ background: 'var(--modal-bg, #F9FAFB)' }}
           >
@@ -252,9 +268,9 @@ export default function UpdateBOM() {
             <div className="grid grid-cols-2 gap-x-8 gap-y-5">
               <div className="flex flex-col gap-1">
                 <FormLabel required>Resource</FormLabel>
-                <TextInput 
-                  placeholder="Enter User Name" 
-                  value={form.Resource} 
+                <TextInput
+                  placeholder="Enter User Name"
+                  value={form.Resource}
                   readOnly={true}
                   className="bg-gray-50 text-gray-500"
                 />
@@ -262,9 +278,9 @@ export default function UpdateBOM() {
 
               <div className="flex flex-col gap-1">
                 <FormLabel required>Material</FormLabel>
-                <TextInput 
-                  placeholder="Enter User ID" 
-                  value={form.Material} 
+                <TextInput
+                  placeholder="Enter User ID"
+                  value={form.Material}
                   readOnly={true}
                   className="bg-gray-50 text-gray-500"
                 />
@@ -272,19 +288,19 @@ export default function UpdateBOM() {
 
               <div className="flex flex-col gap-1">
                 <FormLabel required>Movt Type</FormLabel>
-                <TextInput 
-                  placeholder="Enter Contact No" 
-                  type="number" 
-                  value={form.MovementType} 
-                  onChange={fForm('MovementType')} 
+                <TextInput
+                  placeholder="Enter Contact No"
+                  type="number"
+                  value={form.MovementType}
+                  onChange={fForm('MovementType')}
                 />
               </div>
 
               <div className="flex flex-col gap-1">
                 <FormLabel required>Line</FormLabel>
-                <TextInput 
-                  placeholder="Enter Line" 
-                  value={form.Line} 
+                <TextInput
+                  placeholder="Enter Line"
+                  value={form.Line}
                   readOnly={true}
                   className="bg-gray-50 text-gray-500"
                 />
@@ -292,48 +308,48 @@ export default function UpdateBOM() {
 
               <div className="flex flex-col gap-1">
                 <FormLabel required>Plant</FormLabel>
-                <SelectInput 
-                  options={plants.map(p => ({ label: p.PlantName || p.PlantCode, value: p.PlantCode }))} 
-                  value={form.WERKS} 
+                <SelectInput
+                  options={plants.map(p => ({ label: p.PlantName || p.PlantCode, value: p.PlantCode }))}
+                  value={form.WERKS}
                   disabled={true}
                   className="bg-gray-50 text-gray-500"
-                  placeholder="Select Plant" 
+                  placeholder="Select Plant"
                 />
               </div>
 
               <div className="flex flex-col gap-1">
                 <FormLabel required>BOM Material</FormLabel>
-                <TextInput 
-                  placeholder="Enter BOM Materials" 
-                  value={form.Goods} 
-                  onChange={fForm('Goods')} 
+                <TextInput
+                  placeholder="Enter BOM Materials"
+                  value={form.Goods}
+                  onChange={fForm('Goods')}
                 />
               </div>
 
               <div className="flex flex-col gap-1">
                 <FormLabel required>Weighfeeder</FormLabel>
-                <TextInput 
-                  placeholder="Enter User Name" 
-                  value={form.WeighFeeder} 
-                  onChange={fForm('WeighFeeder')} 
+                <TextInput
+                  placeholder="Enter User Name"
+                  value={form.WeighFeeder}
+                  onChange={fForm('WeighFeeder')}
                 />
               </div>
 
               <div className="flex flex-col gap-1">
                 <FormLabel required>Storage Location</FormLabel>
-                <TextInput 
-                  placeholder="Enter Storage Location" 
-                  value={form.StorageLocation} 
-                  onChange={fForm('StorageLocation')} 
+                <TextInput
+                  placeholder="Enter Storage Location"
+                  value={form.StorageLocation}
+                  onChange={fForm('StorageLocation')}
                 />
               </div>
             </div>
 
             <div className="flex justify-end gap-3 mt-8">
               <BackButton onClick={() => setDialogOpen(false)} label="Close" />
-              <SubmitButton 
-                onClick={handleSave} 
-                disabled={saving || !form.Goods} 
+              <SubmitButton
+                onClick={handleSave}
+                disabled={saving || !form.Goods}
                 loading={saving}
               >
                 Save

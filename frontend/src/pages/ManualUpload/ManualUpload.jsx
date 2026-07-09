@@ -8,6 +8,7 @@ import Table1 from '../../components/Common/Table/Table';
 import { Edit } from 'lucide-react';
 import api from '../../api/axios';
 import { Snackbar, Alert } from '@mui/material';
+import { FaExchangeAlt } from "react-icons/fa";
 
 const MODULES = ['GradeChange', 'Stoppages', 'EquipmentStandby', 'MeterReading', 'ProcessOrder', 'ProcessParameter'];
 
@@ -116,10 +117,10 @@ export default function ManualUpload() {
       center: true,
       render: (_, row) => {
         // Simple heuristic to identify a row uniquely
-        const isEditing = editingRow && 
-                          editingRow.PlantCode === row.PlantCode && 
-                          editingRow.ModuleName === row.ModuleName && 
-                          editingRow.FromDate === row.FromDate;
+        const isEditing = editingRow &&
+          editingRow.PlantCode === row.PlantCode &&
+          editingRow.ModuleName === row.ModuleName &&
+          editingRow.FromDate === row.FromDate;
 
         if (isEditing) {
           return (
@@ -149,15 +150,15 @@ export default function ManualUpload() {
   ];
 
   return (
-    <div className="w-full h-full flex flex-col px-2 py-2">
-        <Title label="Enable Manual Upload" className="mb-6" />
+    <div className="w-full h-full flex flex-col ">
+      <Title label="Enable Manual Upload" className="mb-6" moduleName="Transaction" icon={FaExchangeAlt} />
       <div className="rounded-[12px] border p-6 mb-6 mt-2" style={{ background: 'var(--bg-main-container)', borderColor: 'var(--form-border)' }}>
 
 
-        <div className="grid grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-4 gap-6 mb-4">
           <div className="flex flex-col gap-1">
             <FormLabel required>Select Module</FormLabel>
-            <SelectInput 
+            <SelectInput
               options={MODULES.map(m => ({ label: m, value: m }))}
               value={form.ModuleName}
               onChange={(e) => setForm({ ...form, ModuleName: e.target.value })}
@@ -166,7 +167,7 @@ export default function ManualUpload() {
           </div>
           <div className="flex flex-col gap-1">
             <FormLabel required>Plant Name</FormLabel>
-            <SelectInput 
+            <SelectInput
               options={plants.map(p => ({ label: p.PlantName || p.PlantCode, value: p.PlantCode }))}
               value={form.PlantCode}
               onChange={(e) => setForm({ ...form, PlantCode: e.target.value })}
@@ -199,7 +200,7 @@ export default function ManualUpload() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 mb-6">
+        <div className="flex flex-col gap-1 mb-2">
           <FormLabel required>Remark</FormLabel>
           <div className="relative">
             <textarea

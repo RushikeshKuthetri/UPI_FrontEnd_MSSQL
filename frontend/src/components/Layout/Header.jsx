@@ -64,20 +64,9 @@ export default function Header() {
             alt="logo"
           />
         </div>
-        <h1
-          style={{
-            marginLeft: -8,
-            fontSize: "clamp(14px, 2vw, 20px)",
-            color: "var(--header-text-color, #29292B)",
-            fontWeight: 500,
-            fontFamily: "'Poppins', 'Inter', sans-serif",
-            letterSpacing: "-0.02em",
-            textAlign: "center",
-            margin: 0,
-          }}
-        >
-          UTCL Process Integrator
-        </h1>
+        <h1 className=" -ml-2  text-sm sm:text-md md:text-lg lg:text-lg xl:text-xl text-[var(--header-text-color)] font-medium font-poppins tracking-tight text-center">
+         UTCL Process Integrator
+        </h1> 
       </div>
 
       {/* RIGHT: Help + User + Logout */}

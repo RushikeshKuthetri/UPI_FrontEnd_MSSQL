@@ -11,6 +11,7 @@ import PoDetailsModal from '../../components/Common/Modals/PoDetailsModal';
 import { Eye, SquarePen, Undo2 } from 'lucide-react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Alert, Snackbar } from '@mui/material';
 import api from '../../api/axios';
+import { FaExchangeAlt } from "react-icons/fa";
 
 function getYesterday() {
   const d = new Date();
@@ -133,7 +134,7 @@ export default function ProcessOrder() {
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex justify-between items-center mb-3 shrink-0">
-        <Title label="Process Order Confirm" />
+        <Title label="Process Order Confirm" moduleName="Transaction" icon={FaExchangeAlt} />
       </div>
 
       <div className="relative z-20 flex w-full flex-wrap items-end justify-start gap-4 px-4 py-4 rounded-xl border border-[var(--form-border)] shadow-sm shrink-0">
@@ -174,13 +175,8 @@ export default function ProcessOrder() {
 
       {showTable && (
         <>
-          <div className="my-3 mb-2 shrink-0">
-            <h3 className="text-[15px] font-semibold text-[var(--title)]">
-              Process Order Confirm
-            </h3>
-          </div>
 
-          <div className="flex-1 min-h-0 w-full overflow-x-auto">
+          <div className="flex-1 min-h-0 w-full mt-3 overflow-x-auto">
             {loading ? (
               <div className="flex items-center justify-center h-40">Loading...</div>
             ) : (
