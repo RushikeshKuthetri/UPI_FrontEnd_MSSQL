@@ -33,6 +33,17 @@ export default function ProcessParameter() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
+  const [isUploadEnabled, setIsUploadEnabled] = useState(false);
+
+  useEffect(() => {
+    if (filters.plantCode) {
+      api.get(`/manual-upload/check?moduleName=ProcessParameter&plantCode=${filters.plantCode}`)
+        .then(({ data }) => setIsUploadEnabled(data.enabled))
+        .catch(() => setIsUploadEnabled(false));
+    } else {
+      setIsUploadEnabled(false);
+    }
+  }, [filters.plantCode]);
 
   useEffect(() => {
     api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => {});
@@ -73,7 +84,7 @@ export default function ProcessParameter() {
         <Typography variant="h5" fontWeight={700}>Process Parameter</Typography>
         <Button variant="contained" startIcon={<Add />} onClick={() => setDialogOpen(true)}>New Entry</Button>
       </Box>
-      <FilterBar filters={filters} onChange={setFilters} onSearch={handleSearch} onUpload={handleUpload} plants={plants} />
+      <FilterBar filters={filters} onChange={setFilters} onSearch={handleSearch} onUpload={isUploadEnabled ? handleUpload : null} plants={plants} />
       <DataTable columns={COLUMNS} rows={rows} loading={loading} page={page} rowsPerPage={50}
         onPageChange={(_, p) => { setPage(p); fetchData(p); }} />
 

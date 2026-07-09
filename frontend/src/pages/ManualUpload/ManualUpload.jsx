@@ -9,10 +9,12 @@ import { Edit } from 'lucide-react';
 import api from '../../api/axios';
 import { Snackbar, Alert } from '@mui/material';
 import { FaExchangeAlt } from "react-icons/fa";
+import useAuthStore from '../../store/authStore';
 
 const MODULES = ['GradeChange', 'Stoppages', 'EquipmentStandby', 'MeterReading', 'ProcessOrder', 'ProcessParameter'];
 
 export default function ManualUpload() {
+  const { user } = useAuthStore();
   const [requests, setRequests] = useState([]);
   const [plants, setPlants] = useState([]);
 
@@ -26,7 +28,7 @@ export default function ManualUpload() {
   }, []);
 
   const fetchRequests = () => {
-    api.get('/manual-upload').then(({ data }) => {
+    api.get('/manual-upload/pending').then(({ data }) => {
       const transformed = data.map(r => ({
         ...r,
         IsApprovedStatus: String(r.IsApproved).trim() === '1' ? 'Approved' : String(r.IsApproved).trim() === '0' ? 'Rejected' : 'Pending'
@@ -128,9 +130,6 @@ export default function ManualUpload() {
               <button onClick={() => handleApprove(row)} className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition">
                 Approve
               </button>
-              <button onClick={() => handleReject(row)} className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition">
-                Reject
-              </button>
             </div>
           );
         }
@@ -140,8 +139,14 @@ export default function ManualUpload() {
           return null;
         }
 
+        // Only DH can approve
+        const isDH = user?.RoleName === 'DH' || user?.Role === 'DH' || user?.roleName === 'DH' || user?.role === 'DH';
+        if (!isDH) {
+          return null;
+        }
+
         return (
-          <button onClick={() => handleEdit(row)} className="text-purple-500 hover:text-purple-700 transition">
+          <button onClick={() => handleEdit(row)} className="text-purple-500 hover:text-purple-700 transition" title="Review Request">
             <Edit size={16} />
           </button>
         );

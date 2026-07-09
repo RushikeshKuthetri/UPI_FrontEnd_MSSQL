@@ -55,6 +55,7 @@ export default function Stoppages() {
   const [splitEntries, setSplitEntries] = useState([]);
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isUploadEnabled, setIsUploadEnabled] = useState(false);
 
   useEffect(() => {
     api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => { });
@@ -62,6 +63,16 @@ export default function Stoppages() {
     api.get('/stoppages/reasons').then(({ data }) => setReasons(data)).catch(() => { });
     api.get('/stoppages/departments').then(({ data }) => setDepts(data)).catch(() => { });
   }, []);
+
+  useEffect(() => {
+    if (filters.plantCode) {
+      api.get(`/manual-upload/check?moduleName=Stoppages&plantCode=${filters.plantCode}`)
+        .then(({ data }) => setIsUploadEnabled(data.enabled))
+        .catch(() => setIsUploadEnabled(false));
+    } else {
+      setIsUploadEnabled(false);
+    }
+  }, [filters.plantCode]);
 
   useEffect(() => {
     if (filters.plantCode) {
@@ -413,8 +424,9 @@ export default function Stoppages() {
           <IconButton icon={Split} tooltip="Split" onClick={() => {
             alert("Please use the split button located on the specific row you wish to split.");
           }} />
-
-          <IconButton icon={Upload} tooltip="Upload" onClick={() => setIsUploadModalOpen(true)} />
+          {isUploadEnabled && (
+            <IconButton icon={Upload} tooltip="Upload" onClick={() => setIsUploadModalOpen(true)} />
+          )}
         </div>
       </div>
 

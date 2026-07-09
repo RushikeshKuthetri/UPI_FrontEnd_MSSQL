@@ -50,6 +50,7 @@ export default function GradeChange() {
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState(EMPTY_EDIT);
   const [saving, setSaving] = useState(false);
+  const [isUploadEnabled, setIsUploadEnabled] = useState(false);
 
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({
@@ -68,6 +69,16 @@ export default function GradeChange() {
     api.get('/users/plants').then(({ data }) => setPlants(data.map(p => ({ label: p.PlantName || p.PlantCode, value: p.PlantCode })))).catch(() => { });
     api.get('/grade-change/reasons').then(({ data }) => setReasons(data.map(r => ({ label: `${r.GRUND} – ${r.GRDTX}`, value: r.GRUND })))).catch(() => { });
   }, []);
+
+  useEffect(() => {
+    if (filters.plantCode) {
+      api.get(`/manual-upload/check?moduleName=GradeChange&plantCode=${filters.plantCode}`)
+        .then(({ data }) => setIsUploadEnabled(data.enabled))
+        .catch(() => setIsUploadEnabled(false));
+    } else {
+      setIsUploadEnabled(false);
+    }
+  }, [filters.plantCode]);
 
   useEffect(() => {
     if (filters.plantCode) {
@@ -400,8 +411,9 @@ export default function GradeChange() {
         <div className="flex items-center justify-end gap-4 mr-2">
           <IconButton icon={ClockFading} tooltip="Shift Duration" />
           <IconButton icon={Merge} tooltip="Merge" onClick={handleMerge} />
-          {/* <IconButton icon={PersonStanding} tooltip="Run of Job" onClick={handleRunAfJob} /> */}
-          <IconButton icon={Upload} tooltip="Upload" onClick={() => setIsUploadModalOpen(true)} />
+          {isUploadEnabled && (
+            <IconButton icon={Upload} tooltip="Upload" onClick={() => setIsUploadModalOpen(true)} />
+          )}
           <IconButton icon={CalendarCheck} tooltip="Open Event" onClick={handleOpenEvents} />
         </div>
       </div>
