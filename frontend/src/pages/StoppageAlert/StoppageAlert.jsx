@@ -130,7 +130,7 @@ export default function StoppageAlert() {
     { key: 'ResourceText', label: 'Resource', render: (_, r) => r.ResourceText || r.ARBPL },
     { key: 'StopDate', label: 'Stop Date', render: (_, r) => (r.StopDate || '').split('T')[0] },
     { key: 'StopTime', label: 'Stop Time' },
-    { key: 'StoppageReasonText', label: 'Stoppage Reason', render: (_, r) => r.StoppageReasonText || r.ReasonForStoppage },
+    { key: 'StoppageReasonText', label: 'Stoppage Reason', render: (_, r) => r.StoppageReasonText || r.StoppageReason || '-' },
     { key: 'StockPosition', label: 'Stack Position', render: (_, r) => r.StockPosition || '-' },
   ];
 

@@ -65,14 +65,14 @@ export default function Stoppages() {
   }, []);
 
   useEffect(() => {
-    if (filters.plantCode) {
-      api.get(`/manual-upload/check?moduleName=Stoppages&plantCode=${filters.plantCode}`)
+    if (filters.plantCode && filters.postingDate) {
+      api.get(`/manual-upload/check?moduleName=Stoppages&plantCode=${filters.plantCode}&date=${filters.postingDate}`)
         .then(({ data }) => setIsUploadEnabled(data.enabled))
         .catch(() => setIsUploadEnabled(false));
     } else {
       setIsUploadEnabled(false);
     }
-  }, [filters.plantCode]);
+  }, [filters.plantCode, filters.postingDate]);
 
   useEffect(() => {
     if (filters.plantCode) {
@@ -270,6 +270,10 @@ export default function Stoppages() {
   };
 
   const handleSendToSAP = async () => {
+    if (!filters.plantCode || !filters.line) {
+      alert('Please select Plant and Line before sending to SAP');
+      return;
+    }
     try {
       await api.post('/stoppages/send-to-sap', apiParams());
       alert('Stoppages sent to SAP successfully');
@@ -421,9 +425,9 @@ export default function Stoppages() {
             placeholder="Search in table..."
           />
 
-          <IconButton icon={Split} tooltip="Split" onClick={() => {
+          {/* <IconButton icon={Split} tooltip="Split" onClick={() => {
             alert("Please use the split button located on the specific row you wish to split.");
-          }} />
+          }} /> */}
           {isUploadEnabled && (
             <IconButton icon={Upload} tooltip="Upload" onClick={() => setIsUploadModalOpen(true)} />
           )}

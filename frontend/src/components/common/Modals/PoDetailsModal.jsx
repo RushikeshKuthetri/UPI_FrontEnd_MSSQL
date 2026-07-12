@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Target, FileText, Globe, Folder, Upload, TableProperties, SquarePen, Split, Plus } from 'lucide-react';
 import Table1 from '../Table/Table';
 import BackButton from '../Form/Buttons/BackButton';
@@ -8,30 +8,40 @@ import NextButton from '../Form/Buttons/NextButton';
 import ActionButton from '../Form/Buttons/ActionButton';
 import IconButton from '../Form/Buttons/IconButton';
 import Title from '../TitleAndLabel/Title';
+import api from '../../../api/axios';
 
-const MODAL_MOCK_DATA = Array.from({ length: 6 }, (_, i) => ({
-  id: i + 1,
-  material: 'FINECOAL',
-  storageLocation: 'BAU1',
-  movtType: '101',
-  batch: 'PYRO',
-  qc: 100,
-  quantity: 750,
-  correction: 0,
-  correctWf: 750,
-  moist: 0,
-  finalQuantity: 759,
-  uom: 'MT',
-  isoUom: 'MT',
-  unit1: 'MT',
-  isoUnit1: 'MT',
-  availableStock: 0,
-  remarks: '',
-}));
 
-const PoDetailsModal = ({ isOpen, onClose }) => {
+const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
   const [isAddBomItemOpen, setIsAddBomItemOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [detailsData, setDetailsData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && selectedRow) {
+      setLoading(true);
+      const fetchDetails = async () => {
+        try {
+          const params = {
+            plantCode: selectedRow.WERKS || selectedRow.Plant || '',
+            resource: selectedRow.Resource || '',
+            material: selectedRow.Material || '',
+            postingDate: selectedRow.PostingDate || '',
+          };
+          const { data } = await api.get('/process-order/details', { params });
+          setDetailsData(data.data || []);
+        } catch (error) {
+          console.error("Error fetching details", error);
+          setDetailsData([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchDetails();
+    } else {
+      setDetailsData([]);
+    }
+  }, [isOpen, selectedRow]);
 
   if (!isOpen) return null;
 
@@ -115,7 +125,7 @@ const PoDetailsModal = ({ isOpen, onClose }) => {
             </div>
             <div>
               <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Process Order No.</div>
-              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>00001327500</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>{selectedRow?.ProcessOrder || selectedRow?.OrderNo || '-'}</div>
             </div>
           </div>
           <div className="hidden md:block h-10 w-px" style={{ background: 'var(--form-border, #E5E7EB)' }}></div>
@@ -127,7 +137,7 @@ const PoDetailsModal = ({ isOpen, onClose }) => {
             </div>
             <div>
               <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Order Quality</div>
-              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>3500 MT</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>{selectedRow?.Quantity || selectedRow?.Yield || '-'} {selectedRow?.UOM || ''}</div>
             </div>
           </div>
           <div className="hidden md:block h-10 w-px" style={{ background: 'var(--form-border, #E5E7EB)' }}></div>
@@ -139,7 +149,7 @@ const PoDetailsModal = ({ isOpen, onClose }) => {
             </div>
             <div>
               <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Resource</div>
-              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>UCLIML 1</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>{selectedRow?.Resource || '-'}</div>
             </div>
           </div>
           <div className="hidden md:block h-10 w-px" style={{ background: 'var(--form-border, #E5E7EB)' }}></div>
@@ -151,7 +161,7 @@ const PoDetailsModal = ({ isOpen, onClose }) => {
             </div>
             <div>
               <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Material</div>
-              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>FINECOAL Plant BA01</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>{selectedRow?.Material || '-'}</div>
             </div>
           </div>
           <div className="hidden md:block h-10 w-px" style={{ background: 'var(--form-border, #E5E7EB)' }}></div>
@@ -163,7 +173,9 @@ const PoDetailsModal = ({ isOpen, onClose }) => {
             </div>
             <div>
               <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Posting Date</div>
-              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>03 March 2026</div>
+              <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>
+                {selectedRow?.PostingDate ? new Date(selectedRow.PostingDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
+              </div>
             </div>
           </div>
         </div>
@@ -172,14 +184,20 @@ const PoDetailsModal = ({ isOpen, onClose }) => {
         <div className="flex justify-between items-center mb-4">
           <ActionButton icon={Plus} label="Add Material" onClick={() => setIsAddBomItemOpen(true)} />
           <div className="flex items-center gap-4 var(--submit-button-bg)">
-            <IconButton icon={Upload} onClick={() => setIsUploadModalOpen(true)} tooltip="Upload Excel" />
+            {isUploadEnabled && (
+              <IconButton icon={Upload} onClick={() => setIsUploadModalOpen(true)} tooltip="Upload Excel" />
+            )}
             <IconButton icon={TableProperties} onClick={() => alert("Table Properties clicked")} tooltip="Table Properties" />
           </div>
         </div>
 
         {/* Table Area */}
         <div className="flex-grow w-full overflow-hidden">
-          <Table1 columns={columns} data={MODAL_MOCK_DATA} />
+          {loading ? (
+            <div className="flex justify-center items-center h-32">Loading...</div>
+          ) : (
+            <Table1 columns={columns} data={detailsData} />
+          )}
         </div>
 
         {/* Footer Actions */}

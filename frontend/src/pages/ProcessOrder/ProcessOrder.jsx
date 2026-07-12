@@ -37,10 +37,21 @@ export default function ProcessOrder() {
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
   const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
+  const [isUploadEnabled, setIsUploadEnabled] = useState(false);
 
   useEffect(() => {
     api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => { });
   }, []);
+
+  useEffect(() => {
+    if (filters.plantCode && filters.postingDate) {
+      api.get(`/manual-upload/check?moduleName=ProcessOrder&plantCode=${filters.plantCode}&date=${filters.postingDate}`)
+        .then(({ data }) => setIsUploadEnabled(data.enabled))
+        .catch(() => setIsUploadEnabled(false));
+    } else {
+      setIsUploadEnabled(false);
+    }
+  }, [filters.plantCode, filters.postingDate]);
 
 
 
@@ -120,7 +131,7 @@ export default function ProcessOrder() {
           <button className="transition hover:opacity-70 text-[#8A38F5]">
             <SquarePen size={15} strokeWidth={2.5} />
           </button>
-          <button className="transition hover:opacity-70 text-[#22b8cf]" onClick={() => setIsPoModalOpen(true)}>
+          <button className="transition hover:opacity-70 text-[#22b8cf]" onClick={() => { setSingleRow(row); setIsPoModalOpen(true); }}>
             <Eye size={15} strokeWidth={2.5} />
           </button>
           <button className="transition hover:opacity-70 text-[var(--text-color)]" onClick={() => openSingleReverse(row)} title="Reverse PO">
@@ -222,7 +233,7 @@ export default function ProcessOrder() {
       </Dialog>
 
       {/* View Details Modal */}
-      <PoDetailsModal isOpen={isPoModalOpen} onClose={() => setIsPoModalOpen(false)} />
+      <PoDetailsModal isOpen={isPoModalOpen} onClose={() => setIsPoModalOpen(false)} isUploadEnabled={isUploadEnabled} selectedRow={singleRow} />
 
       <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
         <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))}>{snack.msg}</Alert>

@@ -5,13 +5,13 @@ import SelectInput from '../../components/Common/Form/Inputs/SelectInput';
 import DateTimePicker from '../../components/Common/Form/Inputs/DatePicker';
 import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import Table1 from '../../components/Common/Table/Table';
-import { Edit } from 'lucide-react';
+
 import api from '../../api/axios';
 import { Snackbar, Alert } from '@mui/material';
 import { FaExchangeAlt } from "react-icons/fa";
 import useAuthStore from '../../store/authStore';
 
-const MODULES = ['GradeChange', 'Stoppages', 'EquipmentStandby', 'MeterReading', 'ProcessOrder', 'ProcessParameter'];
+const MODULES = ['GradeChange', 'Stoppages', 'MeterReading', 'Process Order Confirmation' ];
 
 export default function ManualUpload() {
   const { user } = useAuthStore();
@@ -62,11 +62,7 @@ export default function ManualUpload() {
     }
   };
 
-  const [editingRow, setEditingRow] = useState(null);
 
-  const handleEdit = (row) => {
-    setEditingRow(row);
-  };
 
   const handleApprove = async (row) => {
     try {
@@ -118,36 +114,20 @@ export default function ManualUpload() {
       label: 'Action',
       center: true,
       render: (_, row) => {
-        // Simple heuristic to identify a row uniquely
-        const isEditing = editingRow &&
-          editingRow.PlantCode === row.PlantCode &&
-          editingRow.ModuleName === row.ModuleName &&
-          editingRow.FromDate === row.FromDate;
-
-        if (isEditing) {
-          return (
-            <div className="flex gap-2 justify-center">
-              <button onClick={() => handleApprove(row)} className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition">
-                Approve
-              </button>
-            </div>
-          );
-        }
-
-        // Hide Edit button if it's already approved
+        // Hide Approve button if it's already approved
         if (String(row.IsApproved).trim() === '1') {
           return null;
         }
 
-        // Only DH can approve
-        const isDH = user?.RoleName === 'DH' || user?.Role === 'DH' || user?.roleName === 'DH' || user?.role === 'DH';
-        if (!isDH) {
+        // Only Admin can approve
+        const isAdmin = user?.roles?.includes('Admin') || user?.Roles?.includes('Admin') || user?.RoleName === 'Admin';
+        if (!isAdmin) {
           return null;
         }
 
         return (
-          <button onClick={() => handleEdit(row)} className="text-purple-500 hover:text-purple-700 transition" title="Review Request">
-            <Edit size={16} />
+          <button onClick={() => handleApprove(row)} className="px-2 py-0.5 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition">
+            Approve
           </button>
         );
       }
@@ -157,10 +137,10 @@ export default function ManualUpload() {
   return (
     <div className="w-full h-full flex flex-col ">
       <Title label="Enable Manual Upload" className="mb-6" moduleName="Transaction" icon={FaExchangeAlt} />
-      <div className="rounded-[12px] border p-6 mb-6 mt-2" style={{ background: 'var(--bg-main-container)', borderColor: 'var(--form-border)' }}>
+      <div className="rounded-[12px] border py-5 px-4  mb-6 mt-2" style={{ background: 'var(--bg-main-container)', borderColor: 'var(--form-border)' }}>
 
 
-        <div className="grid grid-cols-4 gap-6 mb-4">
+        <div className="grid grid-cols-4 gap-6 mb-2">
           <div className="flex flex-col gap-1">
             <FormLabel required>Select Module</FormLabel>
             <SelectInput
@@ -205,7 +185,7 @@ export default function ManualUpload() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 mb-2">
+        <div className="flex flex-col gap-1 mb-1">
           <FormLabel required>Remark</FormLabel>
           <div className="relative">
             <textarea

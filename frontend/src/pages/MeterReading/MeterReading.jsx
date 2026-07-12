@@ -9,6 +9,7 @@ import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import ActionButton from '../../components/Common/Form/Buttons/ActionButton';
 import IconButton from '../../components/Common/Form/Buttons/IconButton';
 import Table1 from '../../components/Common/Table/Table';
+import UploadFileModal from '../../components/Common/Modals/UploadFileModal';
 import { PersonStanding, SendHorizontal, Sigma, SquarePen, Upload, Check, X } from 'lucide-react';
 import api from '../../api/axios';
 import { FaExchangeAlt } from "react-icons/fa";
@@ -31,6 +32,7 @@ export default function MeterReading() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showTable, setShowTable] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const [plants, setPlants] = useState([]);
   const [lines, setLines] = useState([]);
@@ -39,6 +41,17 @@ export default function MeterReading() {
   const [newEntryOpen, setNewEntryOpen] = useState(false);
   const [newForm, setNewForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [isUploadEnabled, setIsUploadEnabled] = useState(false);
+
+  useEffect(() => {
+    if (filters.plantCode && filters.postingDate) {
+      api.get(`/manual-upload/check?moduleName=MeterReading&plantCode=${filters.plantCode}&date=${filters.postingDate}`)
+        .then(({ data }) => setIsUploadEnabled(data.enabled))
+        .catch(() => setIsUploadEnabled(false));
+    } else {
+      setIsUploadEnabled(false);
+    }
+  }, [filters.plantCode, filters.postingDate]);
 
   useEffect(() => {
     api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => {});
@@ -80,7 +93,7 @@ export default function MeterReading() {
   };
 
   const handleUploadClick = () => {
-    fileRef.current?.click();
+    setIsUploadModalOpen(true);
   };
 
   const handleUpload = async (file) => {
@@ -89,6 +102,7 @@ export default function MeterReading() {
     try {
       const { data } = await api.post('/meter-reading/upload', fd);
       alert(data.message);
+      setIsUploadModalOpen(false);
       fetchData();
     } catch (err) {
       alert(err.response?.data?.message || 'Upload failed');
@@ -242,9 +256,9 @@ export default function MeterReading() {
             </div>
 
             <div className="flex items-center gap-4 mr-2">
-              <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden
-                onChange={(e) => { if (e.target.files[0]) handleUpload(e.target.files[0]); e.target.value = ''; }} />
-              <IconButton icon={Upload} tooltip="Upload Excel" onClick={handleUploadClick} />
+              {isUploadEnabled && (
+                <IconButton icon={Upload} tooltip="Upload Excel" onClick={handleUploadClick} />
+              )}
               <IconButton icon={PersonStanding} tooltip="Run of Job" />
               <IconButton icon={Sigma} tooltip="Sum" />
             </div>
@@ -259,6 +273,12 @@ export default function MeterReading() {
           </div>
         </>
       )}
+
+      <UploadFileModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUpload={handleUpload}
+      />
     </div>
   );
 }

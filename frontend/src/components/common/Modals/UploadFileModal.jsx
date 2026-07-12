@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { X, CloudUpload, TableProperties } from 'lucide-react';
 
-const UploadFileModal = ({ isOpen, onClose }) => {
+const UploadFileModal = ({ isOpen, onClose, onUpload }) => {
   const [selectedFile, setSelectedFile] = useState(null);
 
   if (!isOpen) return null;
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      if (onUpload) {
+        onUpload(file);
+      }
     }
   };
 

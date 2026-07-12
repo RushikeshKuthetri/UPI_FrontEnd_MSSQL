@@ -45,7 +45,7 @@ export default function RoleMenuMapping() {
   };
 
   const filtered = rows.filter(r =>
-    (r.RoleName || '').toLowerCase().includes(search.toLowerCase())
+    (r.RoleName || '').toLowerCase().includes((search || '').toString().toLowerCase())
   );
 
   const handleAdd = () => {
@@ -167,16 +167,16 @@ export default function RoleMenuMapping() {
 
               <div className="flex flex-col gap-1">
                 <FormLabel required>Assign Menus</FormLabel>
-                <div className="border border-gray-200 rounded-lg p-3 max-h-[250px] overflow-y-auto flex flex-col gap-2">
+                <div className="border border-[var(--card-border-main)] rounded-lg p-3 max-h-[250px] overflow-y-auto flex flex-col gap-2">
                   {AVAILABLE_MENUS.map((menu, idx) => (
-                    <label key={idx} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+                    <label key={idx} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 px-2 py-1 rounded">
                       <input
                         type="checkbox"
                         checked={form.MenuIds.includes(idx + 1) || form.MenuIds.includes(menu)}
                         onChange={() => toggleMenu(idx + 1)}
                         className="w-4 h-4 accent-orange-500 cursor-pointer"
                       />
-                      <span className="text-sm text-gray-700">{menu}</span>
+                      <span className="text-sm text-[var(--text-color)]">{menu}</span>
                     </label>
                   ))}
                 </div>

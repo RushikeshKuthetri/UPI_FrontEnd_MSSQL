@@ -218,7 +218,10 @@ const AddNewModal = ({
             <FormLabel required>Expected Downtime</FormLabel>
             <DaysTimeInput
               value={downtime}
-              onChange={setDowntime}
+              onChange={(val) => {
+                setDowntime(val);
+                if (errors.downtime) setErrors(prev => ({ ...prev, downtime: null }));
+              }}
               error={errors.downtime}
             />
           </div>
@@ -285,7 +288,10 @@ const AddNewModal = ({
             <FormLabel required>Expected Downtime</FormLabel>
             <DaysTimeInput
               value={startDowntime}
-              onChange={setStartDowntime}
+              onChange={(val) => {
+                setStartDowntime(val);
+                if (errors.startDowntime) setErrors(prev => ({ ...prev, startDowntime: null }));
+              }}
               error={errors.startDowntime}
             />
           </div>

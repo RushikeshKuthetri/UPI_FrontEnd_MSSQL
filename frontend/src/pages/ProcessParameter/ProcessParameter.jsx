@@ -36,14 +36,14 @@ export default function ProcessParameter() {
   const [isUploadEnabled, setIsUploadEnabled] = useState(false);
 
   useEffect(() => {
-    if (filters.plantCode) {
-      api.get(`/manual-upload/check?moduleName=ProcessParameter&plantCode=${filters.plantCode}`)
+    if (filters.plantCode && filters.postingDate) {
+      api.get(`/manual-upload/check?moduleName=ProcessParameter&plantCode=${filters.plantCode}&date=${filters.postingDate}`)
         .then(({ data }) => setIsUploadEnabled(data.enabled))
         .catch(() => setIsUploadEnabled(false));
     } else {
       setIsUploadEnabled(false);
     }
-  }, [filters.plantCode]);
+  }, [filters.plantCode, filters.postingDate]);
 
   useEffect(() => {
     api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => {});

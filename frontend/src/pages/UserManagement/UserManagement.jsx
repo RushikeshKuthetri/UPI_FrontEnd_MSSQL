@@ -6,15 +6,15 @@ import EditUserModal from '../../components/Common/Modals/EditUserModal';
 import { SquarePen, UserCheck, UserX } from 'lucide-react';
 import api from '../../api/axios';
 
-const EMPTY_USER = { 
-  userName: '', 
-  firstName: '', 
-  lastName: '', 
-  mobileNumber: '', 
-  email: '', 
-  isActive: true, 
-  role: [], 
-  plant: [] 
+const EMPTY_USER = {
+  userName: '',
+  firstName: '',
+  lastName: '',
+  mobileNumber: '',
+  email: '',
+  isActive: true,
+  role: [],
+  plant: []
 };
 
 export default function UserManagement() {
@@ -68,8 +68,8 @@ export default function UserManagement() {
           return found ? found : null;
         }).filter(Boolean) : [],
         plant: data.Plants ? data.Plants.split(',').filter(Boolean).map(p => {
-            const found = plants.find(pl => pl.value === p.trim());
-            return found ? found : { label: p, value: p };
+          const found = plants.find(pl => pl.value === p.trim());
+          return found ? found : { label: p, value: p };
         }) : [],
       });
     } catch (error) {
@@ -123,8 +123,8 @@ export default function UserManagement() {
   const columns = [
     { key: 'UserName', label: 'Username' },
     { key: 'EmailId', label: 'Email' },
-    { 
-      key: 'Roles', 
+    {
+      key: 'Roles',
       label: 'Roles',
       render: (val) => (
         <div className="flex gap-1 flex-wrap">
@@ -136,8 +136,8 @@ export default function UserManagement() {
         </div>
       )
     },
-    { 
-      key: 'Plants', 
+    {
+      key: 'Plants',
       label: 'Plants',
       render: (val) => {
         const pArr = val?.split(',').filter(Boolean) || [];
@@ -159,9 +159,8 @@ export default function UserManagement() {
       key: 'IsActive',
       label: 'Status',
       render: (value) => (
-        <span className={`px-2 py-0.5 rounded-full text-[12px] font-medium border ${
-          value ? 'bg-green-100 text-green-600 border-green-200' : 'bg-red-100 text-red-500 border-red-200'
-        }`}>
+        <span className={`px-2 py-0.5 rounded-full text-[12px] font-medium border ${value ? 'bg-green-100 text-green-600 border-green-200' : 'bg-red-100 text-red-500 border-red-200'
+          }`}>
           {value ? 'Active' : 'Inactive'}
         </span>
       ),
@@ -203,10 +202,10 @@ export default function UserManagement() {
           User Management
         </h2>
         <div className="flex items-center gap-4">
-          <SearchInput 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)} 
-            placeholder="Search users..." 
+          <SearchInput
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search users..."
           />
           <div onClick={openCreate}>
             <SubmitButton text="New User" />

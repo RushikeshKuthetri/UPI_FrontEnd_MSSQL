@@ -133,8 +133,8 @@ export default function UpdateBOM() {
         <input
           type="checkbox"
           checked={!!row.isBaseMaterial}
-          readOnly
-          className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+          disabled
+          className="w-4 h-4 text-gray-400 border-gray-300 rounded focus:ring-gray-400 cursor-not-allowed opacity-50"
         />
       )
     },

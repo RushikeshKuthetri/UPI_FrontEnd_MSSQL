@@ -71,14 +71,14 @@ export default function GradeChange() {
   }, []);
 
   useEffect(() => {
-    if (filters.plantCode) {
-      api.get(`/manual-upload/check?moduleName=GradeChange&plantCode=${filters.plantCode}`)
+    if (filters.plantCode && filters.postingDate) {
+      api.get(`/manual-upload/check?moduleName=GradeChange&plantCode=${filters.plantCode}&date=${filters.postingDate}`)
         .then(({ data }) => setIsUploadEnabled(data.enabled))
         .catch(() => setIsUploadEnabled(false));
     } else {
       setIsUploadEnabled(false);
     }
-  }, [filters.plantCode]);
+  }, [filters.plantCode, filters.postingDate]);
 
   useEffect(() => {
     if (filters.plantCode) {
@@ -167,7 +167,8 @@ export default function GradeChange() {
       setEditOpen(false);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Update failed');
+      // alert(err.response?.data?.message || 'Update failed');
+      console.log("err", err)
     } finally {
       setSaving(false);
     }
@@ -191,7 +192,8 @@ export default function GradeChange() {
       setAddForm({ PlantCode: '', ResourceName: '', Line: '', Material: '', StartTime: null, EndTime: null });
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Insert failed');
+      // alert(err.response?.data?.message || 'Insert failed');
+       console.log("err", err)
     } finally {
       setSaving(false);
     }

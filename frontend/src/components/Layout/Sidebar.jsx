@@ -76,12 +76,12 @@ const menuItems = [
   //   path: "/reports",
   //   hasDropdown: false,
   // },
-  // {
-  //   name: "User Management",
-  //   icon: FaRegUser,
-  //   path: "/user-management",
-  //   hasDropdown: false,
-  // },
+  {
+    name: "User Management",
+    icon: FaRegUser,
+    path: "/user-management",
+    hasDropdown: false,
+  },
 ];
 
 // ── Tree connector dimensions ─────────────────────────────────────

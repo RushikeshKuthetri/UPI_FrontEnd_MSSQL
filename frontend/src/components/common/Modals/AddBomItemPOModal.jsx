@@ -6,6 +6,7 @@ import DateTimePicker from '../Form/Inputs/DatePicker';
 import BackButton from '../Form/Buttons/BackButton';
 import NextButton from '../Form/Buttons/NextButton';
 import Title from '../TitleAndLabel/Title';
+import api from '../../../api/axios';
 
 const AddBomItemPOModal = ({ isOpen, onClose }) => {
   const [form, setForm] = useState({
@@ -40,7 +41,7 @@ const AddBomItemPOModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newErrors = {};
     if (!form.processOrderNo) newErrors.processOrderNo = 'Process Order No. is required';
     if (!form.material) newErrors.material = 'Material is required';
@@ -56,7 +57,25 @@ const AddBomItemPOModal = ({ isOpen, onClose }) => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      onClose();
+      try {
+        const payload = {
+          StorageLocation: form.storageLocation,
+          Plant: form.plant,
+          BatchName: form.batch,
+          MovtTypeBom: form.movtType,
+          Resource: form.resource,
+          Material: form.material,
+          PostingDate: form.postingDate,
+          BOMName: form.bomMaterials,
+          Weighfeeder: form.weighfeeder,
+          line: form.processOrderNo
+        };
+        await api.post('/process-order/bom-item', payload);
+        alert('BOM Item added successfully');
+        onClose();
+      } catch (error) {
+        console.error('Failed to add BOM item:', error);
+      }
     }
   };
 
