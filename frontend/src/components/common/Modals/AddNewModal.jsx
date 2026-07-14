@@ -11,10 +11,10 @@ import NextButton from '../Form/Buttons/NextButton';
 import BackButton from '../Form/Buttons/BackButton';
 import Title from '../TitleAndLabel/Title';
 
-const AddNewModal = ({ 
-  isOpen, 
-  onClose, 
-  initialData, 
+const AddNewModal = ({
+  isOpen,
+  onClose,
+  initialData,
   onSave,
   lines = [],
   resources = [],
@@ -66,6 +66,14 @@ const AddNewModal = ({
     }
   }, [isOpen, initialData]);
 
+   const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
   const handleSave = () => {
     const newErrors = {};
 
@@ -89,13 +97,17 @@ const AddNewModal = ({
 
     setErrors(newErrors);
 
+
+   
+
+
     if (Object.keys(newErrors).length === 0) {
       const payload = {
         ID: initialData?.ID || '0',
         WERKS: initialData?.WERKS || '',
         Line: line,
         Resource: resource,
-        StopDate: stopDate ? stopDate.toISOString().split('T')[0] : '',
+        StopDate: stopDate ? formatDate(stopDate) : '',
         StartTime: timeRange.from,
         StopTime: timeRange.to,
         StoppageType: stoppageType,
@@ -104,11 +116,12 @@ const AddNewModal = ({
         ExpectedDowntime: downtime.time,
         StockPosition: stockPosition,
         ReasonForStoppage: reason,
-        StartDate: startDate ? startDate.toISOString().split('T')[0] : '',
+        StartDate: startDate ? formatDate(startDate) : '',
         ActualDowntimeDays: startDowntime.days,
         ActualDowntime: startDowntime.time,
         RootCauseForStoppage: rootCause,
       };
+      console.log("Payload is being passed is =============================>",)
       onSave(payload);
     }
   };
@@ -171,7 +184,7 @@ const AddNewModal = ({
               showTime={false}
               placeholder="dd/MM/yyyy"
               error={errors.stopDate}
-                maxDate={new Date(new Date().getFullYear() + 10, 11, 31)}
+              maxDate={new Date(new Date().getFullYear() + 10, 11, 31)}
             />
           </div>
 

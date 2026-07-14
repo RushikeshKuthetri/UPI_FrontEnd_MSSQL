@@ -5,6 +5,9 @@ import { FaExchangeAlt } from "react-icons/fa";
 import { FaRegUser } from "react-icons/fa6";
 import { ImFilesEmpty } from "react-icons/im";
 
+import { MdAdminPanelSettings } from "react-icons/md";
+import { IoSettingsOutline } from "react-icons/io5";
+
 const ROUTE_MAP = {
   dashboard:          { label: "Dashboard",          icon: MdDashboard },
   "grade-change":     { label: "Grade Change" },
@@ -12,14 +15,32 @@ const ROUTE_MAP = {
   "stoppage-alert":   { label: "Stoppage Alert" },
   "equipment-standby":{ label: "Equipment Standby" },
   "meter-reading":    { label: "Meter Reading" },
-  "process-order":    { label: "Process Order",     icon: FaExchangeAlt },
+  "process-order":    { label: "Process Order" },
   reversal:           { label: "PO Reversal" },
   "process-parameter":{ label: "Process Parameter" },
   "update-bom":       { label: "Update BOM" },
   "manual-upload":    { label: "Manual Upload" },
   reports:            { label: "Reports",            icon: ImFilesEmpty },
   "user-management":  { label: "User Management",   icon: FaRegUser },
+  admin:              { label: "Manage Admin",      icon: IoSettingsOutline, unclickable: true },
+  "business-unit":    { label: "Business Unit" },
+  "plant-details":    { label: "Plant Details" },
+  roles:              { label: "Roles" },
+  "role-menu-mapping":{ label: "Role Menu Mapping" }
 };
+
+const TRANSACTION_PAGES = [
+  "grade-change",
+  "stoppages",
+  "stoppage-alert",
+  "equipment-standby",
+  "meter-reading",
+  "process-order",
+  "reversal",
+  "process-parameter",
+  "update-bom",
+  "manual-upload"
+];
 
 export default function BreadCrumb() {
   const location = useLocation();
@@ -32,11 +53,24 @@ export default function BreadCrumb() {
 
   const segments = pathname.split("/").filter(Boolean);
 
-  const crumbs = segments.map((seg, i) => ({
-    ...(ROUTE_MAP[seg] || { label: seg, icon: null }),
-    path: "/" + segments.slice(0, i + 1).join("/"),
-    isLast: i === segments.length - 1,
-  }));
+  const crumbs = [];
+
+  if (segments.length > 0 && TRANSACTION_PAGES.includes(segments[0])) {
+    crumbs.push({
+      label: "Transaction",
+      icon: FaExchangeAlt,
+      unclickable: true,
+      isLast: false,
+    });
+  }
+
+  segments.forEach((seg, i) => {
+    crumbs.push({
+      ...(ROUTE_MAP[seg] || { label: seg, icon: null }),
+      path: "/" + segments.slice(0, i + 1).join("/"),
+      isLast: i === segments.length - 1,
+    });
+  });
 
   return (
     <nav

@@ -128,9 +128,9 @@ export default function ProcessOrder() {
       Yield: row.Yield || row.Quantity || '',
       UOM: row.UOM || '',
       ISOUOM: row.ISOUOM || '',
-      Unit1: row.Unit1 || row.Goods || '',
-      ISOUnit1: row.ISOUnit1 || '',
-      Remarks: row.Remarks || '',
+      Unit1: row.Unit1UOM || row.Unit1 || row.Goods || '',
+      ISOUnit1: row.Unit1ISO || row.ISOUnit1 || '',
+      Remarks: row.ConfirmationText || row.Remarks || '',
     });
   };
 
@@ -148,8 +148,8 @@ export default function ProcessOrder() {
     try {
       const payload = {
         Id: row.Id,
-        Operation: editValues.Operation,
-        Yield: editValues.Yield,
+        Operation: editValues.Operation !== null && editValues.Operation !== undefined ? String(editValues.Operation) : '',
+        Yield: editValues.Yield ? Number(editValues.Yield) : null,
         UOM: editValues.UOM,
         ISOUOM: editValues.ISOUOM,
         Unit1: editValues.Unit1,
@@ -182,9 +182,9 @@ export default function ProcessOrder() {
     transition: 'border-color 0.2s',
   };
 
-  const renderEditableCell = (field, widthClass = 'w-[90px]') => (
+  const renderEditableCell = (field, widthClass = 'w-[90px]', type = 'text') => (
     <input
-      type="text"
+      type={type}
       value={editValues[field] ?? ''}
       onChange={(e) => handleEditChange(field, e.target.value)}
       style={inlineInputStyle}
@@ -201,14 +201,14 @@ export default function ProcessOrder() {
       key: 'Operation', label: 'Operation',
       render: (_, r, idx) =>
         editingIndex === idx
-          ? renderEditableCell('Operation', 'w-[80px]')
+          ? renderEditableCell('Operation', 'w-[80px]', 'number')
           : (r.Operation || r.Line || '-'),
     },
     {
       key: 'Yield', label: 'Yield',
       render: (_, r, idx) =>
         editingIndex === idx
-          ? renderEditableCell('Yield', 'w-[80px]')
+          ? renderEditableCell('Yield', 'w-[80px]', 'number')
           : (r.Yield || r.Quantity || '-'),
     },
     {
@@ -230,21 +230,21 @@ export default function ProcessOrder() {
       render: (_, r, idx) =>
         editingIndex === idx
           ? renderEditableCell('Unit1', 'w-[70px]')
-          : (r.Unit1 || r.Goods || '-'),
+          : (r.Unit1UOM || r.Unit1 || r.Goods || '-'),
     },
     {
       key: 'ISOUnit1', label: 'ISOUnit 1',
       render: (_, r, idx) =>
         editingIndex === idx
           ? renderEditableCell('ISOUnit1', 'w-[70px]')
-          : (r.ISOUnit1 || '-'),
+          : (r.Unit1ISO || r.ISOUnit1 || '-'),
     },
     {
       key: 'Remarks', label: 'Remarks',
       render: (_, r, idx) =>
         editingIndex === idx
-          ? renderEditableCell('Remarks', 'w-[100px]')
-          : (r.Remarks || '-'),
+          ? renderEditableCell('Remarks', 'w-[100px]', 'text')
+          : (r.ConfirmationText || r.Remarks || '-'),
     },
     {
       key: 'action',

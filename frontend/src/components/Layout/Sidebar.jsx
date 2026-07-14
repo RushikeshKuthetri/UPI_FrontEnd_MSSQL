@@ -76,17 +76,17 @@ const menuItems = [
   //   path: "/reports",
   //   hasDropdown: false,
   // },
-  {
-    name: "User Management",
-    icon: FaRegUser,
-    path: "/user-management",
-    hasDropdown: false,
-  },
+  // {
+  //   name: "User Management",
+  //   icon: FaRegUser,
+  //   path: "/user-management",
+  //   hasDropdown: false,
+  // },
 ];
 
 // ── Tree connector dimensions ─────────────────────────────────────
-const SPINE_X = 8;
-const ITEM_H = 32;
+const SPINE_X = 10;
+const ITEM_H = 35;
 const LINE_W = 1.5;
 const RADIUS = 10;
 const SVG_W = 20;

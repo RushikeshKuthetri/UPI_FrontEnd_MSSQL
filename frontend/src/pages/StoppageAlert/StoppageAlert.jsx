@@ -107,8 +107,11 @@ export default function StoppageAlert() {
   };
 
   const handleSaveModal = async (payload) => {
+      // console.log("Payload is --->",payload)
+      // return;
     try {
       await api.post('/stoppage-alert/save', payload);
+    
       alert('Stoppage alert saved successfully');
       setIsModalOpen(false);
       fetchData();

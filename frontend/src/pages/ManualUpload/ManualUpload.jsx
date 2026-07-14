@@ -28,6 +28,14 @@ export default function ManualUpload() {
     fetchRequests();
   }, []);
 
+   const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
   const fetchRequests = () => {
     api.get('/manual-upload/pending').then(({ data }) => {
       const transformed = data.map(r => ({
@@ -49,8 +57,8 @@ export default function ManualUpload() {
       await api.post('/manual-upload/request', {
         ModuleName: form.ModuleName,
         PlantCode: form.PlantCode,
-        FromDate: form.FromDate,
-        ToDate: form.ToDate,
+        FromDate: form.FromDate ? formatDate(form.FromDate) : null,
+        ToDate: form.ToDate ? formatDate(form.ToDate) : null,
         Reason: form.Remark
       });
       setSnack({ open: true, msg: 'Manual upload request submitted', severity: 'success' });
@@ -87,6 +95,8 @@ export default function ManualUpload() {
       setSnack({ open: true, msg: err.response?.data?.message || 'Rejection failed', severity: 'error' });
     }
   };
+
+  
 
   const columns = [
     {
