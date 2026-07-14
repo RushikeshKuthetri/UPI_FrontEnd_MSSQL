@@ -8,7 +8,7 @@ import ResetButton from '../../components/Common/Form/Buttons/ResetButton';
 import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import Table1 from '../../components/Common/Table/Table';
 import PoDetailsModal from '../../components/Common/Modals/PoDetailsModal';
-import { Eye, SquarePen, Undo2 } from 'lucide-react';
+import { Eye, SquarePen, Undo2, Check, X } from 'lucide-react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Alert, Snackbar } from '@mui/material';
 import api from '../../api/axios';
 import { FaExchangeAlt } from "react-icons/fa";
@@ -39,6 +39,11 @@ export default function ProcessOrder() {
   const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
   const [isUploadEnabled, setIsUploadEnabled] = useState(false);
 
+  // Inline edit state
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editValues, setEditValues] = useState({});
+  const [editSaving, setEditSaving] = useState(false);
+
   useEffect(() => {
     api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => { });
   }, []);
@@ -59,6 +64,7 @@ export default function ProcessOrder() {
     setFilters({ postingDate: yest, plantCode: '' });
     setRows([]);
     setShowTable(false);
+    setEditingIndex(null);
   };
 
   const fetchData = useCallback(async () => {
@@ -68,6 +74,7 @@ export default function ProcessOrder() {
     }
     setLoading(true);
     setShowTable(true);
+    setEditingIndex(null);
     try {
       let fromDateStr = '';
       let toDateStr = '';
@@ -113,32 +120,177 @@ export default function ProcessOrder() {
     }
   };
 
+  // --- Inline Edit Handlers ---
+  const handleEditClick = (row, index) => {
+    setEditingIndex(index);
+    setEditValues({
+      Operation: row.Operation || row.Line || '',
+      Yield: row.Yield || row.Quantity || '',
+      UOM: row.UOM || '',
+      ISOUOM: row.ISOUOM || '',
+      Unit1: row.Unit1 || row.Goods || '',
+      ISOUnit1: row.ISOUnit1 || '',
+      Remarks: row.Remarks || '',
+    });
+  };
+
+  const handleEditChange = (field, value) => {
+    setEditValues((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleEditCancel = () => {
+    setEditingIndex(null);
+    setEditValues({});
+  };
+
+  const handleEditSave = async (row, index) => {
+    setEditSaving(true);
+    try {
+      const payload = {
+        Id: row.Id,
+        Operation: editValues.Operation,
+        Yield: editValues.Yield,
+        UOM: editValues.UOM,
+        ISOUOM: editValues.ISOUOM,
+        Unit1: editValues.Unit1,
+        ISOUnit1: editValues.ISOUnit1,
+        Remarks: editValues.Remarks,
+      };
+      await api.put('/process-order/update', payload);
+      setSnack({ open: true, msg: 'Record updated successfully', severity: 'success' });
+      setEditingIndex(null);
+      setEditValues({});
+      fetchData();
+    } catch (err) {
+      setSnack({ open: true, msg: err.response?.data?.message || 'Update failed', severity: 'error' });
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  // Inline edit input style
+  const inlineInputStyle = {
+    width: '100%',
+    minWidth: '60px',
+    padding: '4px 8px',
+    fontSize: '13px',
+    border: '1.5px solid var(--form-border)',
+    borderRadius: '6px',
+    outline: 'none',
+    background: 'var(--input-enable-bg, #fff)',
+    color: 'var(--text-color, #000)',
+    transition: 'border-color 0.2s',
+  };
+
+  const renderEditableCell = (field, widthClass = 'w-[90px]') => (
+    <input
+      type="text"
+      value={editValues[field] ?? ''}
+      onChange={(e) => handleEditChange(field, e.target.value)}
+      style={inlineInputStyle}
+      className={`${widthClass} focus:border-[#8A38F5]`}
+      autoFocus={field === 'Operation'}
+    />
+  );
+
   const columns = [
     { key: 'Resource', label: 'Resource' },
     { key: 'ProcessOrder', label: 'Process Order', render: (_, r) => r.ProcessOrder || r.OrderNo || '-' },
     { key: 'Material', label: 'Material' },
-    { key: 'Operation', label: 'Operation', render: (_, r) => r.Operation || r.Line || '-' },
-    { key: 'Yield', label: 'Yield', render: (_, r) => r.Yield || r.Quantity || '-' },
-    { key: 'UOM', label: 'UOM' },
-    { key: 'ISOUOM', label: 'ISOUOM' },
-    { key: 'Unit1', label: 'Unit 1', render: (_, r) => r.Unit1 || r.Goods || '-' },
-    { key: 'ISOUnit1', label: 'ISOUnit 1', render: (_, r) => r.ISOUnit1 || '-' },
+    {
+      key: 'Operation', label: 'Operation',
+      render: (_, r, idx) =>
+        editingIndex === idx
+          ? renderEditableCell('Operation', 'w-[80px]')
+          : (r.Operation || r.Line || '-'),
+    },
+    {
+      key: 'Yield', label: 'Yield',
+      render: (_, r, idx) =>
+        editingIndex === idx
+          ? renderEditableCell('Yield', 'w-[80px]')
+          : (r.Yield || r.Quantity || '-'),
+    },
+    {
+      key: 'UOM', label: 'UOM',
+      render: (_, r, idx) =>
+        editingIndex === idx
+          ? renderEditableCell('UOM', 'w-[70px]')
+          : (r.UOM || '-'),
+    },
+    {
+      key: 'ISOUOM', label: 'ISOUOM',
+      render: (_, r, idx) =>
+        editingIndex === idx
+          ? renderEditableCell('ISOUOM', 'w-[70px]')
+          : (r.ISOUOM || '-'),
+    },
+    {
+      key: 'Unit1', label: 'Unit 1',
+      render: (_, r, idx) =>
+        editingIndex === idx
+          ? renderEditableCell('Unit1', 'w-[70px]')
+          : (r.Unit1 || r.Goods || '-'),
+    },
+    {
+      key: 'ISOUnit1', label: 'ISOUnit 1',
+      render: (_, r, idx) =>
+        editingIndex === idx
+          ? renderEditableCell('ISOUnit1', 'w-[70px]')
+          : (r.ISOUnit1 || '-'),
+    },
+    {
+      key: 'Remarks', label: 'Remarks',
+      render: (_, r, idx) =>
+        editingIndex === idx
+          ? renderEditableCell('Remarks', 'w-[100px]')
+          : (r.Remarks || '-'),
+    },
     {
       key: 'action',
       label: 'Action',
-      render: (_, row) => (
-        <div className="flex items-center gap-3">
-          <button className="transition hover:opacity-70 text-[#8A38F5]">
-            <SquarePen size={15} strokeWidth={2.5} />
-          </button>
-          <button className="transition hover:opacity-70 text-[#22b8cf]" onClick={() => { setSingleRow(row); setIsPoModalOpen(true); }}>
-            <Eye size={15} strokeWidth={2.5} />
-          </button>
-          <button className="transition hover:opacity-70 text-[var(--text-color)]" onClick={() => openSingleReverse(row)} title="Reverse PO">
-            <Undo2 size={15} strokeWidth={2.5} />
-          </button>
-        </div>
-      ),
+      render: (_, row, idx) =>
+        editingIndex === idx ? (
+          <div className="flex items-center gap-3">
+            <button
+              className="transition hover:opacity-70 text-[#10B981]"
+              onClick={() => handleEditSave(row, idx)}
+              disabled={editSaving}
+              title="Save"
+            >
+              {editSaving ? (
+                <span className="inline-block w-4 h-4 border-2 border-[#10B981] border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Check size={16} strokeWidth={2.5} />
+              )}
+            </button>
+            <button
+              className="transition hover:opacity-70 text-[#EF4444]"
+              onClick={handleEditCancel}
+              disabled={editSaving}
+              title="Cancel"
+            >
+              <X size={16} strokeWidth={2.5} />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <button
+              className="transition hover:opacity-70 text-[#8A38F5]"
+              onClick={() => handleEditClick(row, idx)}
+              disabled={editingIndex !== null}
+              title="Edit"
+            >
+              <SquarePen size={15} strokeWidth={2.5} />
+            </button>
+            <button className="transition hover:opacity-70 text-[#22b8cf]" onClick={() => { setSingleRow(row); setIsPoModalOpen(true); }}>
+              <Eye size={15} strokeWidth={2.5} />
+            </button>
+            <button className="transition hover:opacity-70 text-[var(--text-color)]" onClick={() => openSingleReverse(row)} title="Reverse PO">
+              <Undo2 size={15} strokeWidth={2.5} />
+            </button>
+          </div>
+        ),
     },
   ];
 
@@ -241,3 +393,4 @@ export default function ProcessOrder() {
     </div>
   );
 }
+

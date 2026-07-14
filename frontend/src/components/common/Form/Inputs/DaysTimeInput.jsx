@@ -23,7 +23,7 @@ const TimePicker = ({ value, onChange }) => {
   };
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
-  const minuteOptions = [0, 15, 30, 45];
+  const minuteOptions = Array.from({ length: 60 }, (_, i) => i);
 
   return (
     <div className="relative w-[90px]">

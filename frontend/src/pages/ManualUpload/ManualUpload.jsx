@@ -6,10 +6,11 @@ import DateTimePicker from '../../components/Common/Form/Inputs/DatePicker';
 import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import Table1 from '../../components/Common/Table/Table';
 
-import api from '../../api/axios';
+import { Check, X } from 'lucide-react';
 import { Snackbar, Alert } from '@mui/material';
 import { FaExchangeAlt } from "react-icons/fa";
 import useAuthStore from '../../store/authStore';
+import api from '../../api/axios';
 
 const MODULES = ['GradeChange', 'Stoppages', 'MeterReading', 'Process Order Confirmation' ];
 
@@ -68,9 +69,10 @@ export default function ManualUpload() {
     try {
       await api.post('/manual-upload/approve', { PlantCode: row.PlantCode, ModuleName: row.ModuleName });
       setSnack({ open: true, msg: 'Request approved', severity: 'success' });
-      setEditingRow(null);
+      
       fetchRequests();
     } catch (err) {
+      console.log(err)
       setSnack({ open: true, msg: err.response?.data?.message || 'Approval failed', severity: 'error' });
     }
   };
@@ -79,7 +81,7 @@ export default function ManualUpload() {
     try {
       await api.post('/manual-upload/reject', { PlantCode: row.PlantCode, ModuleName: row.ModuleName });
       setSnack({ open: true, msg: 'Request rejected', severity: 'success' });
-      setEditingRow(null);
+      
       fetchRequests();
     } catch (err) {
       setSnack({ open: true, msg: err.response?.data?.message || 'Rejection failed', severity: 'error' });
@@ -114,7 +116,7 @@ export default function ManualUpload() {
       label: 'Action',
       center: true,
       render: (_, row) => {
-        // Hide Approve button if it's already approved
+        // Hide Approve/Reject buttons if it's already approved
         if (String(row.IsApproved).trim() === '1') {
           return null;
         }
@@ -126,9 +128,22 @@ export default function ManualUpload() {
         }
 
         return (
-          <button onClick={() => handleApprove(row)} className="px-2 py-0.5 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition">
-            Approve
-          </button>
+          <div className="flex gap-2 justify-center">
+            <button 
+              onClick={() => handleApprove(row)} 
+              className="p-1.5 text-green-500 hover:text-green-600 rounded transition"
+              title="Approve"
+            >
+              <Check size={16} />
+            </button>
+            <button 
+              onClick={() => handleReject(row)} 
+              className="p-1.5 text-red-500 hover:text-red-600 rounded transition"
+              title="Reject"
+            >
+              <X size={16} />
+            </button>
+          </div>
         );
       }
     }

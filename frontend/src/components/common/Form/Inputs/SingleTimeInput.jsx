@@ -104,10 +104,7 @@ const SingleTimeInput = ({
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
 
-  const minuteOptions = [
-    0, 5, 10, 15, 20, 25,
-    30, 35, 40, 45, 50, 55,
-  ];
+  const minuteOptions = Array.from({ length: 60 }, (_, i) => i);
 
   return (
     <div

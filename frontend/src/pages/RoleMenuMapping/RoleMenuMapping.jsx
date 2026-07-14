@@ -44,9 +44,11 @@ export default function RoleMenuMapping() {
     finally { setLoading(false); }
   };
 
-  const filtered = rows.filter(r =>
-    (r.RoleName || '').toLowerCase().includes((search || '').toString().toLowerCase())
-  );
+  const filtered = rows.filter(r => {
+    if (!search) return true;
+    const q = typeof search === 'string' ? search.toLowerCase() : '';
+    return (r.RoleName || '').toLowerCase().includes(q);
+  });
 
   const handleAdd = () => {
     setForm({ RoleId: '', MenuIds: [] });
@@ -124,7 +126,7 @@ export default function RoleMenuMapping() {
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
        className="w-full h-[36px] pl-8 pr-3 rounded-lg border border-[var(--search-border)] text-sm outline-none bg-[var(--search-bg)] text-[var(--text-color)] placeholder:text-[var(--search-placeholder)]"/>
         </div> */}
-        <SearchBar value={search} onChange={setSearch} placeholder="Search..." />
+        <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." />
       </div>
 
       <div className="rounded-xl border border-[var(--card-border-main)] shadow-sm p-2 flex-1 min-h-0 flex flex-col">

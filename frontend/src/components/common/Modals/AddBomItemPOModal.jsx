@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import FormLabel from '../TitleAndLabel/InputLabel';
 import TextInput from '../Form/Inputs/TextInput';
@@ -8,7 +8,7 @@ import NextButton from '../Form/Buttons/NextButton';
 import Title from '../TitleAndLabel/Title';
 import api from '../../../api/axios';
 
-const AddBomItemPOModal = ({ isOpen, onClose }) => {
+const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editingRow }) => {
   const [form, setForm] = useState({
     processOrderNo: '',
     material: '',
@@ -21,6 +21,38 @@ const AddBomItemPOModal = ({ isOpen, onClose }) => {
     batch: '',
     weighfeeder: '',
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      if (editingRow) {
+        setForm({
+          processOrderNo: selectedRow?.ProcessOrder || selectedRow?.OrderNo || '',
+          material: editingRow.material || '',
+          resource: selectedRow?.Resource || '',
+          plant: selectedRow?.WERKS || selectedRow?.Plant || '',
+          postingDate: selectedRow?.PostingDate || null,
+          bomMaterials: editingRow.unit1 || '',
+          movtType: editingRow.movtType || '',
+          storageLocation: editingRow.storageLocation || '',
+          batch: editingRow.batch || '',
+          weighfeeder: editingRow.correctWf !== undefined ? String(editingRow.correctWf) : '',
+        });
+      } else if (selectedRow) {
+        setForm({
+          processOrderNo: selectedRow.ProcessOrder || selectedRow.OrderNo || '',
+          material: selectedRow.Material || '',
+          resource: selectedRow.Resource || '',
+          plant: selectedRow.WERKS || selectedRow.Plant || '',
+          postingDate: selectedRow.PostingDate || null,
+          bomMaterials: '',
+          movtType: '',
+          storageLocation: '',
+          batch: '',
+          weighfeeder: '',
+        });
+      }
+    }
+  }, [isOpen, selectedRow, editingRow]);
 
   const [errors, setErrors] = useState({});
 
@@ -70,11 +102,22 @@ const AddBomItemPOModal = ({ isOpen, onClose }) => {
           Weighfeeder: form.weighfeeder,
           line: form.processOrderNo
         };
-        await api.post('/process-order/bom-item', payload);
-        alert('BOM Item added successfully');
+
+        if (editingRow) {
+          payload.recordId = editingRow.recordId;
+          await api.put('/process-order/bom-item', payload);
+          alert('BOM Item updated successfully');
+        } else {
+          await api.post('/process-order/bom-item', payload);
+          alert('BOM Item added successfully');
+        }
+        
+        if (typeof onAddSuccess === 'function') {
+          onAddSuccess();
+        }
         onClose();
       } catch (error) {
-        console.error('Failed to add BOM item:', error);
+        console.error('Failed to save BOM item:', error);
       }
     }
   };
@@ -208,7 +251,7 @@ const AddBomItemPOModal = ({ isOpen, onClose }) => {
               name="weighfeeder"
               value={form.weighfeeder}
               onChange={handleChange}
-              placeholder="Enter User Name"
+              placeholder="Enter Weighfeeder"
               error={errors.weighfeeder}
             />
           </div>

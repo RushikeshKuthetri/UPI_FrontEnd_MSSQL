@@ -10,12 +10,14 @@ const DateTimePicker = ({
   disabled = false,
   error = "",
   showTime = true,
-  dateFormat = "d/MM/yyyy h:mm aa",
+  dateFormat,
   timeIntervals = 1,
   maxDate = new Date(),
   minDate,
   className = "",
 }) => {
+  // Set default dateFormat based on showTime prop
+  const finalDateFormat = dateFormat || (showTime ? "d/MM/yyyy h:mm aa" : "dd/MM/yyyy");
   const handleDateChange = (date) => {
     if (maxDate && date > maxDate) return;
 
@@ -47,7 +49,7 @@ const DateTimePicker = ({
             ${className}
           `}
           showTimeSelect={showTime}
-          dateFormat={dateFormat}
+          dateFormat={finalDateFormat}
           timeIntervals={timeIntervals}
           readOnly={disabled}
           disabled={disabled}

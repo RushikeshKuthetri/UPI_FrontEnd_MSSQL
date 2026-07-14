@@ -35,10 +35,12 @@ export default function Roles() {
     finally { setLoading(false); }
   };
 
-  const filtered = rows.filter(r =>
-    (r.Name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (r.Description || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = rows.filter(r => {
+    if (!search) return true;
+    const q = typeof search === 'string' ? search.toLowerCase() : '';
+    return (r.Name || '').toLowerCase().includes(q) ||
+           (r.Description || '').toLowerCase().includes(q);
+  });
 
   const handleAdd = () => {
     setForm({ Name: '', Description: '', IsActive: true });
@@ -119,7 +121,7 @@ export default function Roles() {
 
       <div className="flex items-center justify-between mb-2">
         <Title label="Manage Roles" moduleName="Manage Admin" icon={IoSettingsOutline} />
-        <SearchBar value={search} onChange={setSearch} placeholder="Search..." />
+        <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." />
       </div>
 
       <div className=" rounded-xl border border-[var(--card-border-main)] shadow-sm p-2 flex-1 min-h-0 flex flex-col">

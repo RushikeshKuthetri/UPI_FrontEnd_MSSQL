@@ -16,27 +16,30 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [detailsData, setDetailsData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [editingRow, setEditingRow] = useState(null);
+
+  const fetchDetails = async () => {
+    if (!selectedRow) return;
+    setLoading(true);
+    try {
+      const params = {
+        plantCode: selectedRow.WERKS || selectedRow.Plant || '',
+        resource: selectedRow.Resource || '',
+        material: selectedRow.Material || '',
+        postingDate: selectedRow.PostingDate || '',
+      };
+      const { data } = await api.get('/process-order/details', { params });
+      setDetailsData(data.data || []);
+    } catch (error) {
+      console.error("Error fetching details", error);
+      setDetailsData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen && selectedRow) {
-      setLoading(true);
-      const fetchDetails = async () => {
-        try {
-          const params = {
-            plantCode: selectedRow.WERKS || selectedRow.Plant || '',
-            resource: selectedRow.Resource || '',
-            material: selectedRow.Material || '',
-            postingDate: selectedRow.PostingDate || '',
-          };
-          const { data } = await api.get('/process-order/details', { params });
-          setDetailsData(data.data || []);
-        } catch (error) {
-          console.error("Error fetching details", error);
-          setDetailsData([]);
-        } finally {
-          setLoading(false);
-        }
-      };
       fetchDetails();
     } else {
       setDetailsData([]);
@@ -78,7 +81,13 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
       label: 'Actions',
       render: (_, row) => (
         <div className="flex items-center justify-center gap-3">
-          <button className="text-[#8A38F5] hover:opacity-70 transition">
+          <button 
+            className="text-[#8A38F5] hover:opacity-70 transition"
+            onClick={() => {
+              setEditingRow(row);
+              setIsAddBomItemOpen(true);
+            }}
+          >
             <SquarePen size={15} strokeWidth={2.5} />
           </button>
           <button className="text-[#20C997] hover:opacity-70 transition">
@@ -182,7 +191,10 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
 
         {/* Add Material & Tools Row */}
         <div className="flex justify-between items-center mb-4">
-          <ActionButton icon={Plus} label="Add Material" onClick={() => setIsAddBomItemOpen(true)} />
+          <ActionButton icon={Plus} label="Add Material" onClick={() => {
+            setEditingRow(null);
+            setIsAddBomItemOpen(true);
+          }} />
           <div className="flex items-center gap-4 var(--submit-button-bg)">
             {isUploadEnabled && (
               <IconButton icon={Upload} onClick={() => setIsUploadModalOpen(true)} tooltip="Upload Excel" />
@@ -196,7 +208,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
           {loading ? (
             <div className="flex justify-center items-center h-32">Loading...</div>
           ) : (
-            <Table1 columns={columns} data={detailsData} />
+            <Table1 columns={columns} data={[...detailsData].reverse()} />
           )}
         </div>
 
@@ -208,7 +220,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
 
       </div>
 
-      <AddBomItemPOModal isOpen={isAddBomItemOpen} onClose={() => setIsAddBomItemOpen(false)} />
+      <AddBomItemPOModal isOpen={isAddBomItemOpen} onClose={() => setIsAddBomItemOpen(false)} onAddSuccess={fetchDetails} selectedRow={selectedRow} editingRow={editingRow} />
       <UploadFileModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
     </div>
   );

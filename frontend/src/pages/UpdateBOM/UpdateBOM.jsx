@@ -329,7 +329,8 @@ export default function UpdateBOM() {
               <div className="flex flex-col gap-1">
                 <FormLabel required>Weighfeeder</FormLabel>
                 <TextInput
-                  placeholder="Enter User Name"
+                type={'number'}
+                  placeholder="Enter Weighfeeder"
                   value={form.WeighFeeder}
                   onChange={fForm('WeighFeeder')}
                 />

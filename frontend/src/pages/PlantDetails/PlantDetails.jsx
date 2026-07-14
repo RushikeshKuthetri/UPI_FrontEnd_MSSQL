@@ -41,11 +41,13 @@ export default function PlantDetails() {
     finally { setLoading(false); }
   };
 
-  const filtered = rows.filter(r =>
-    (r.PlantName || '').toLowerCase().includes(search.toLowerCase()) ||
-    (r.PlantCode || '').toLowerCase().includes(search.toLowerCase()) ||
-    (r.DisplayName || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = rows.filter(r => {
+    if (!search) return true;
+    const q = typeof search === 'string' ? search.toLowerCase() : '';
+    return (r.PlantName || '').toLowerCase().includes(q) ||
+           (r.PlantCode || '').toLowerCase().includes(q) ||
+           (r.DisplayName || '').toLowerCase().includes(q);
+  });
 
   const handleAdd = () => {
     setForm(EMPTY_PLANT);
@@ -114,7 +116,7 @@ export default function PlantDetails() {
 
       <div className="flex items-center justify-between mb-2">
         <Title label="Plant Details" moduleName="Manage Admin" icon={IoSettingsOutline} />
-       <SearchBar value={search} onChange={setSearch} placeholder="Search..." />
+       <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." />
       </div>
 
       <div className=" rounded-xl border border-[var(--card-border-main)] shadow-sm p-2 flex-1 min-h-0 flex flex-col">

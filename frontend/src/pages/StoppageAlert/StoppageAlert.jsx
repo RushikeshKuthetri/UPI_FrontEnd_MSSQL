@@ -157,6 +157,7 @@ export default function StoppageAlert() {
             placeholder="Select Date"
             showTime={false}
             dateFormat="dd/MM/yyyy"
+          
           />
         </div>
 

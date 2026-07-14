@@ -92,6 +92,30 @@ export default function MeterReading() {
     alert('SAP WSDL service not configured in this environment');
   };
 
+  const [calculating, setCalculating] = useState(false);
+
+  const handleRunCalculation = async () => {
+    if (!filters.postingDate || !filters.plantCode || !filters.line) {
+      alert('Please select Date, Plant Name, and Line before running calculation');
+      return;
+    }
+    setCalculating(true);
+    try {
+      const { data } = await api.post('/meter-reading/run-calculation', {
+        plantCode: filters.plantCode,
+        postingDate: filters.postingDate,
+        line: filters.line,
+      });
+      alert(data.message || 'Calculation completed');
+      // Refresh the table data after calculation
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Calculation failed');
+    } finally {
+      setCalculating(false);
+    }
+  };
+
   const handleUploadClick = () => {
     setIsUploadModalOpen(true);
   };
@@ -259,8 +283,8 @@ export default function MeterReading() {
               {isUploadEnabled && (
                 <IconButton icon={Upload} tooltip="Upload Excel" onClick={handleUploadClick} />
               )}
-              <IconButton icon={PersonStanding} tooltip="Run of Job" />
-              <IconButton icon={Sigma} tooltip="Sum" />
+              {/* <IconButton icon={PersonStanding} tooltip="Run of Job" /> */}
+              <IconButton icon={Sigma} tooltip="Run Calculation" onClick={handleRunCalculation} disabled={calculating} />
             </div>
           </div>
 
