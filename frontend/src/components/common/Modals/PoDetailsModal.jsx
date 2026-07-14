@@ -3,6 +3,7 @@ import { X, Target, FileText, Globe, Folder, Upload, TableProperties, SquarePen,
 import Table1 from '../Table/Table';
 import BackButton from '../Form/Buttons/BackButton';
 import AddBomItemPOModal from './AddBomItemPOModal';
+import SplitBomItemModal from './SplitBomItemModal';
 import UploadFileModal from './UploadFileModal';
 import NextButton from '../Form/Buttons/NextButton';
 import ActionButton from '../Form/Buttons/ActionButton';
@@ -13,10 +14,12 @@ import api from '../../../api/axios';
 
 const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
   const [isAddBomItemOpen, setIsAddBomItemOpen] = useState(false);
+  const [isSplitBomItemOpen, setIsSplitBomItemOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [detailsData, setDetailsData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
+  const [splitRow, setSplitRow] = useState(null);
 
   const fetchDetails = async () => {
     if (!selectedRow) return;
@@ -90,7 +93,13 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
           >
             <SquarePen size={15} strokeWidth={2.5} />
           </button>
-          <button className="text-[#20C997] hover:opacity-70 transition">
+          <button 
+            className="text-[#20C997] hover:opacity-70 transition"
+            onClick={() => {
+              setSplitRow(row);
+              setIsSplitBomItemOpen(true);
+            }}
+          >
             <Split size={15} strokeWidth={2.5} />
           </button>
         </div>
@@ -221,6 +230,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
       </div>
 
       <AddBomItemPOModal isOpen={isAddBomItemOpen} onClose={() => setIsAddBomItemOpen(false)} onAddSuccess={fetchDetails} selectedRow={selectedRow} editingRow={editingRow} />
+      <SplitBomItemModal isOpen={isSplitBomItemOpen} onClose={() => setIsSplitBomItemOpen(false)} onAddSuccess={fetchDetails} selectedRow={splitRow} />
       <UploadFileModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
     </div>
   );

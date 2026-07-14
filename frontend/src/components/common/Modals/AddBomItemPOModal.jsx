@@ -83,8 +83,6 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
     if (!form.bomMaterials) newErrors.bomMaterials = 'BOM Materials is required';
     if (!form.movtType) newErrors.movtType = 'Movt Type is required';
     if (!form.storageLocation) newErrors.storageLocation = 'Storage Location is required';
-    if (!form.batch) newErrors.batch = 'Batch is required';
-    if (!form.weighfeeder) newErrors.weighfeeder = 'Weighfeeder is required';
 
     setErrors(newErrors);
 
@@ -215,6 +213,7 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
           <div className="flex flex-col">
             <FormLabel required>Movt Type</FormLabel>
             <TextInput
+              type="number"
               name="movtType"
               value={form.movtType}
               onChange={handleChange}
@@ -235,7 +234,7 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
           </div>
 
           <div className="flex flex-col">
-            <FormLabel required>Batch</FormLabel>
+            <FormLabel>Batch</FormLabel>
             <TextInput
               name="batch"
               value={form.batch}
@@ -246,7 +245,7 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
           </div>
 
           <div className="flex flex-col">
-            <FormLabel required>Weighfeeder</FormLabel>
+            <FormLabel>Weighfeeder</FormLabel>
             <TextInput
               name="weighfeeder"
               value={form.weighfeeder}
