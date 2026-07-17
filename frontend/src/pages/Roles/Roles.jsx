@@ -5,9 +5,9 @@ import TextInput from '../../components/Common/Form/Inputs/TextInput';
 import ActionButton from '../../components/Common/Form/Buttons/ActionButton';
 import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import Table1 from '../../components/Common/Table/Table';
+import RoleModal from '../../components/common/Modals/RoleModal';
 import { Plus, SquarePen, Trash2, Search, X } from 'lucide-react';
 import api from '../../api/axios';
-import { Snackbar, Alert } from '@mui/material';
 import { IoSettingsOutline } from "react-icons/io5";
 import SearchBar from '../../components/Common/SearchBar/SearchBar';
 
@@ -15,7 +15,6 @@ export default function Roles() {
   const [rows, setRows] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
-  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
 
   // Modal
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -58,22 +57,22 @@ export default function Roles() {
 
   const handleSave = async () => {
     if (!form.Name) {
-      setSnack({ open: true, msg: 'Role Name is required', severity: 'warning' });
+      alert('Role Name is required');
       return;
     }
     setSaving(true);
     try {
       if (editMode) {
         await api.put(`/roles/${editId}`, form);
-        setSnack({ open: true, msg: 'Role updated successfully', severity: 'success' });
+        alert('Role updated successfully');
       } else {
         await api.post('/roles', form);
-        setSnack({ open: true, msg: 'Role created successfully', severity: 'success' });
+        alert('Role created successfully');
       }
       setDialogOpen(false);
       fetchData();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Save failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Save failed');
     } finally { setSaving(false); }
   };
 
@@ -81,10 +80,10 @@ export default function Roles() {
     if (!window.confirm('Are you sure you want to delete this role?')) return;
     try {
       await api.delete(`/roles/${id}`);
-      setSnack({ open: true, msg: 'Role deleted', severity: 'success' });
+      alert('Role deleted');
       fetchData();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Delete failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Delete failed');
     }
   };
 
@@ -139,56 +138,16 @@ export default function Roles() {
       </div>
 
       {/* Add/Edit Modal */}
-      {dialogOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={e => e.target === e.currentTarget && setDialogOpen(false)}>
-          <div className="relative w-[500px] max-w-[95vw] rounded-2xl px-8 py-6 shadow-2xl flex flex-col" style={{ background: 'var(--modal-bg, #F9FAFB)' }}>
-            <button onClick={() => setDialogOpen(false)} className="absolute top-4 right-4 transition hover:opacity-70 text-gray-700">
-              <X size={20} />
-            </button>
-            <div className="flex items-center justify-center mb-6 mt-2">
-              <Title label={editMode ? "Edit Role" : "Add Role"} />
-            </div>
+      <RoleModal
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        editMode={editMode}
+        form={form}
+        setForm={setForm}
+        saving={saving}
+        handleSave={handleSave}
+      />
 
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Role Name</FormLabel>
-                <TextInput placeholder="Enter Role Name" value={form.Name}
-                  onChange={e => setForm({ ...form, Name: e.target.value })} />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Description</FormLabel>
-                <div className="relative">
-                  <textarea
-                    value={form.Description}
-                    onChange={e => setForm({ ...form, Description: e.target.value.slice(0, 10000) })}
-                    placeholder="Enter Description here..."
-                    rows={4}
-                    className="w-full rounded-lg border border-[var(--input-enable-border)] bg-[var(--input-enable-bg)] px-3 py-2 text-sm outline-none resize-none"
-                  />
-                  <span className="absolute bottom-2 right-3 text-xs text-gray-400">
-                    {form.Description.length}/10000
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <FormLabel required>Is Active</FormLabel>
-                <input type="checkbox" checked={form.IsActive}
-                  onChange={e => setForm({ ...form, IsActive: e.target.checked })}
-                  className="w-4 h-4 accent-orange-500 cursor-pointer" />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-   <button onClick={() => setDialogOpen(false)} className="px-4 py-1.5 rounded-md border border-[var(--form-border)] text-sm font-medium hover:bg-[var(--button-hover-bg)] text-[var(--text-color)] transition">Close</button>              <SubmitButton onClick={handleSave} loading={saving}>Save</SubmitButton>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack(s => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack(s => ({ ...s, open: false }))}>{snack.msg}</Alert>
-      </Snackbar>
     </div>
   );
 }

@@ -5,9 +5,9 @@ import SelectInput from '../../components/Common/Form/Inputs/SelectInput';
 import ActionButton from '../../components/Common/Form/Buttons/ActionButton';
 import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import Table1 from '../../components/Common/Table/Table';
+import RoleMenuMappingModal from '../../components/common/Modals/RoleMenuMappingModal';
 import { Plus, SquarePen, Search, X } from 'lucide-react';
 import api from '../../api/axios';
-import { Snackbar, Alert } from '@mui/material';
 import { IoSettingsOutline } from "react-icons/io5";
 import SearchBar from '../../components/Common/SearchBar/SearchBar';
 
@@ -21,7 +21,6 @@ export default function RoleMenuMapping() {
   const [roles, setRoles] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
-  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
 
   // Modal
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -69,17 +68,17 @@ export default function RoleMenuMapping() {
 
   const handleSave = async () => {
     if (!form.RoleId) {
-      setSnack({ open: true, msg: 'Please select a Role', severity: 'warning' });
+      alert('Please select a Role');
       return;
     }
     setSaving(true);
     try {
       await api.post('/role-menu', { RoleId: form.RoleId, MenuIds: form.MenuIds });
-      setSnack({ open: true, msg: 'Role Menu Mapping saved successfully', severity: 'success' });
+      alert('Role Menu Mapping saved successfully');
       setDialogOpen(false);
       fetchData();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Save failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Save failed');
     } finally { setSaving(false); }
   };
 
@@ -144,57 +143,19 @@ export default function RoleMenuMapping() {
       </div>
 
       {/* Add/Edit Modal */}
-      {dialogOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={e => e.target === e.currentTarget && setDialogOpen(false)}>
-          <div className="relative w-[550px] max-w-[95vw] rounded-2xl px-8 py-6 shadow-2xl flex flex-col" style={{ background: 'var(--modal-bg, #F9FAFB)' }}>
-            <button onClick={() => setDialogOpen(false)} className="absolute top-4 right-4 transition hover:opacity-70 text-gray-700">
-              <X size={20} />
-            </button>
-            <div className="flex items-center justify-center mb-6 mt-2">
-              <Title label={editMode ? "Edit Role Menu Mapping" : "Add Role Menu Mapping"} />
-            </div>
+      <RoleMenuMappingModal
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        editMode={editMode}
+        roles={roles}
+        form={form}
+        setForm={setForm}
+        AVAILABLE_MENUS={AVAILABLE_MENUS}
+        toggleMenu={toggleMenu}
+        saving={saving}
+        handleSave={handleSave}
+      />
 
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Select Role</FormLabel>
-                <SelectInput
-                  options={roles.map(r => ({ label: r.Name, value: r.Id }))}
-                  value={form.RoleId}
-                  onChange={e => setForm({ ...form, RoleId: e.target.value })}
-                  placeholder="Select Role"
-                  disabled={editMode}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Assign Menus</FormLabel>
-                <div className="border border-[var(--card-border-main)] rounded-lg p-3 max-h-[250px] overflow-y-auto flex flex-col gap-2">
-                  {AVAILABLE_MENUS.map((menu, idx) => (
-                    <label key={idx} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 px-2 py-1 rounded">
-                      <input
-                        type="checkbox"
-                        checked={form.MenuIds.includes(idx + 1) || form.MenuIds.includes(menu)}
-                        onChange={() => toggleMenu(idx + 1)}
-                        className="w-4 h-4 accent-orange-500 cursor-pointer"
-                      />
-                      <span className="text-sm text-[var(--text-color)]">{menu}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-   <button onClick={() => setDialogOpen(false)} className="px-4 py-1.5 rounded-md border border-[var(--form-border)] text-sm font-medium hover:bg-[var(--button-hover-bg)] text-[var(--text-color)] transition">Close</button>              <SubmitButton onClick={handleSave} loading={saving}>Save</SubmitButton>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack(s => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack(s => ({ ...s, open: false }))}>{snack.msg}</Alert>
-      </Snackbar>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import {
   Box, Typography, Grid, TextField, MenuItem, Button, Paper, Table,
   TableHead, TableBody, TableRow, TableCell, Checkbox, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Alert, Snackbar, CircularProgress,
+  CircularProgress,
 } from '@mui/material';
 import { Search, Undo } from '@mui/icons-material';
 import api from '../../api/axios';
@@ -35,7 +35,6 @@ export default function ProcessOrderReversal() {
   const [singleRow, setSingleRow] = useState(null);
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
-  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
 
   useEffect(() => {
     api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => {});
@@ -74,7 +73,7 @@ export default function ProcessOrderReversal() {
 
   const openBulkReverse = () => {
     if (!selected.length) {
-      setSnack({ open: true, msg: 'Select at least one record to reverse', severity: 'warning' });
+      alert('Select at least one record to reverse');
       return;
     }
     setReversalMode('bulk');
@@ -87,15 +86,15 @@ export default function ProcessOrderReversal() {
     try {
       if (reversalMode === 'single') {
         await api.post('/po-reversal/reverse', { Id: singleRow.Id, Reason: reason || 'Manual reversal' });
-        setSnack({ open: true, msg: 'Record reversed successfully', severity: 'success' });
+        alert('Record reversed successfully');
       } else {
         const { data } = await api.post('/po-reversal/bulk-reverse', { ids: selected, Reason: reason || 'Bulk reversal' });
-        setSnack({ open: true, msg: data.message, severity: 'success' });
+        alert(data.message);
       }
       setConfirmOpen(false);
       fetchData();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Reversal failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Reversal failed');
     } finally { setSaving(false); }
   };
 
@@ -181,9 +180,9 @@ export default function ProcessOrderReversal() {
           {reversalMode === 'single' ? `Reverse Record — ${singleRow?.Goods}` : `Bulk Reverse ${selected.length} Records`}
         </DialogTitle>
         <DialogContent>
-          <Alert severity="warning" sx={{ mb: 2 }}>
+          <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 border-l-4 border-yellow-400 rounded">
             This will mark the selected record(s) as reversed and create a reversal entry. This action cannot be undone.
-          </Alert>
+          </div>
           {reversalMode === 'single' && singleRow && (
             <Box sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1, fontSize: 13 }}>
               <strong>Plant:</strong> {singleRow.WERKS} | <strong>Resource:</strong> {singleRow.Resource} |
@@ -204,10 +203,6 @@ export default function ProcessOrderReversal() {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))}>{snack.msg}</Alert>
-      </Snackbar>
     </Box>
   );
 }

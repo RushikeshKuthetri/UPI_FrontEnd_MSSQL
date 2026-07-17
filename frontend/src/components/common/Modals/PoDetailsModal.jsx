@@ -70,14 +70,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
     {
       key: 'remarks',
       label: 'Remarks',
-      render: (_, row) => (
-        <input
-          type="text"
-          placeholder="Remark.."
-          className="border rounded px-2 py-1 text-xs w-[80px] bg-transparent outline-none focus:border-[#FD6E41]"
-          style={{ borderColor: 'var(--form-border, #E5E7EB)', color: 'var(--text-color, #000)' }}
-        />
-      ),
+      render: (_, row) => row.ConfirmationText || row.Remarks || row.remarks || '-',
     },
     {
       key: 'actions',
@@ -192,7 +185,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
             <div>
               <div className="text-[11px] mb-0.5" style={{ color: 'var(--text-color, #6B7280)' }}>Posting Date</div>
               <div className="font-semibold text-[13px]" style={{ color: 'var(--title, #000)' }}>
-                {selectedRow?.PostingDate ? new Date(selectedRow.PostingDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
+                {(selectedRow?.PostingDate || selectedRow?.CreatedOn) ? new Date(selectedRow.PostingDate || selectedRow.CreatedOn).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
               </div>
             </div>
           </div>
@@ -208,7 +201,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
             {isUploadEnabled && (
               <IconButton icon={Upload} onClick={() => setIsUploadModalOpen(true)} tooltip="Upload Excel" />
             )}
-            <IconButton icon={TableProperties} onClick={() => alert("Table Properties clicked")} tooltip="Table Properties" />
+            {/* <IconButton icon={TableProperties} onClick={() => alert("Table Properties clicked")} tooltip="Table Properties" /> */}
           </div>
         </div>
 

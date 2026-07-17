@@ -98,7 +98,7 @@ const AddRoleModal = ({ onClose, onSave }) => {
         </div>
 
         {/* Is Active */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center gap-3">
           <FormLabel required>Is Active</FormLabel>
           <CheckboxInput
             checked={form.isActive}

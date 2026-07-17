@@ -12,6 +12,11 @@ import TextInput from '../../components/Common/Form/Inputs/TextInput';
 import Table1 from '../../components/Common/Table/Table';
 import Pagination from '../../components/Common/Pagination/Pagination';
 import UploadFileModal from '../../components/Common/Modals/UploadFileModal';
+import AddGradeChangeModal from '../../components/common/Modals/AddGradeChangeModal';
+import EditGradeChangeModal from '../../components/common/Modals/EditGradeChangeModal';
+import MergeGradeChangeModal from '../../components/common/Modals/MergeGradeChangeModal';
+import OpenEventsModal from '../../components/common/Modals/OpenEventsModal';
+import ShiftDurationModal from '../../components/common/Modals/ShiftDurationModal';
 import { CalendarCheck, Check, ClockFading, Merge, PersonStanding, SendHorizontal, SquarePen, Upload, X, Download, Plus } from 'lucide-react';
 import api from '../../api/axios';
 import { FaExchangeAlt } from "react-icons/fa";
@@ -64,6 +69,10 @@ export default function GradeChange() {
 
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeMaterial, setMergeMaterial] = useState('');
+
+  const [shiftDurationModalOpen, setShiftDurationModalOpen] = useState(false);
+  const [shiftDurationData, setShiftDurationData] = useState([]);
+  const [shiftDurationLoading, setShiftDurationLoading] = useState(false);
 
   useEffect(() => {
     api.get('/users/plants').then(({ data }) => setPlants(data.map(p => ({ label: p.PlantName || p.PlantCode, value: p.PlantCode })))).catch(() => { });
@@ -163,7 +172,7 @@ export default function GradeChange() {
     setSaving(true);
     try {
       await api.put('/grade-change/update', editForm);
-      alert('Record updated successfully');
+      alert('Record updated successfully.');
       setEditOpen(false);
       fetchData();
     } catch (err) {
@@ -193,7 +202,7 @@ export default function GradeChange() {
       fetchData();
     } catch (err) {
       // alert(err.response?.data?.message || 'Insert failed');
-       console.log("err", err)
+      console.log("err", err)
     } finally {
       setSaving(false);
     }
@@ -201,7 +210,7 @@ export default function GradeChange() {
 
   const handleMerge = () => {
     if (selected.size !== 2) {
-      alert('Select exactly 2 records to merge');
+      alert('Select exactly 2 records to merge.');
       return;
     }
     const [r1, r2] = selectedRows;
@@ -266,6 +275,50 @@ export default function GradeChange() {
       setOpenEventsRows([]);
     } finally {
       setOpenEventsLoading(false);
+    }
+  };
+
+  const handleShiftDuration = async () => {
+    if (selected.size === 0) {
+      alert('Select records for Shift Duration');
+      return;
+    }
+    const serialNumbers = selectedRows.map(r => r.SerialNumber || r.SerialNumberActual).filter(Boolean);
+    if (serialNumbers.length === 0) {
+      alert('Selected records do not have SerialNumbers');
+      return;
+    }
+    setShiftDurationLoading(true);
+    setShiftDurationModalOpen(true);
+    try {
+      const payload = {
+        SerialNumberCsv: serialNumbers.join(','),
+        Line: filters.line,
+        PlantCode: filters.plantCode,
+        postdate: filters.postingDate,
+      };
+      const { data } = await api.post('/grade-change/shift-duration/calculate', payload);
+      setShiftDurationData(data.data || []);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Shift Duration Calculation failed');
+      setShiftDurationModalOpen(false);
+    } finally {
+      setShiftDurationLoading(false);
+    }
+  };
+
+  const handleSaveShiftDuration = async () => {
+    if (shiftDurationData.length === 0) return;
+    setSaving(true);
+    try {
+      await api.post('/grade-change/shift-duration/save', { data: shiftDurationData });
+      alert('Grade Time Shift Duration updated Successfully');
+      setShiftDurationModalOpen(false);
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Save failed');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -411,7 +464,7 @@ export default function GradeChange() {
         </div>
 
         <div className="flex items-center justify-end gap-4 mr-2">
-          <IconButton icon={ClockFading} tooltip="Shift Duration" />
+          <IconButton icon={ClockFading} tooltip="Shift Duration" onClick={handleShiftDuration} />
           <IconButton icon={Merge} tooltip="Merge" onClick={handleMerge} />
           {isUploadEnabled && (
             <IconButton icon={Upload} tooltip="Upload" onClick={() => setIsUploadModalOpen(true)} />
@@ -426,7 +479,7 @@ export default function GradeChange() {
 
       {resourceDuration.length > 0 && (
         <div className="flex flex-col items-center justify-center mt-2 shrink-0">
-          <label className="font-semibold text-gray-700 mb-1">Resource Wise Duration</label>
+          <label className="font-semibold text-[var(--text-color)] mb-1">Resource Wise Duration</label>
           <div className="overflow-x-auto w-full mb-4 ">
             <Table1 columns={resourceColumns} data={resourceDuration} />
           </div>
@@ -441,169 +494,53 @@ export default function GradeChange() {
       />
       <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden onChange={(e) => { if (e.target.files[0]) handleUpload(e.target.files[0]); e.target.value = ''; }} />
 
-      {/* Tailwind Modals for Edit, Merge, OpenEvents, Add */}
-      {addOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-[500px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Add Grade Change</h2>
-              <button onClick={() => setAddOpen(false)} className="hover:opacity-70" style={{ color: 'var(--card-subtle)' }}><X size={20} /></button>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Plant</FormLabel>
-                <SelectInput
-                  options={plants}
-                  value={addForm.PlantCode}
-                  onChange={(e) => {
-                    const pc = e.target.value;
-                    setAddForm(f => ({ ...f, PlantCode: pc, Line: '' }));
-                    if (pc) {
-                      api.get('/grade-change/lines', { params: { plantCode: pc } })
-                        .then(({ data }) => setAddFormLines(data.map(l => ({ label: l, value: l }))))
-                        .catch(() => setAddFormLines([]));
-                    } else {
-                      setAddFormLines([]);
-                    }
-                  }}
-                  placeholder="Select Plant"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Line</FormLabel>
-                <SelectInput
-                  options={addFormLines}
-                  value={addForm.Line}
-                  onChange={(e) => setAddForm(f => ({ ...f, Line: e.target.value }))}
-                  placeholder="Select Line"
-                />
-              </div>
-              <div className="flex flex-col gap-1 col-span-2">
-                <FormLabel required>Resource Name</FormLabel>
-                <TextInput value={addForm.ResourceName} onChange={(e) => setAddForm(f => ({ ...f, ResourceName: e.target.value }))} placeholder="Enter Resource Name" />
-              </div>
-              <div className="flex flex-col gap-1 col-span-2">
-                <FormLabel required>Material</FormLabel>
-                <TextInput value={addForm.Material} onChange={(e) => setAddForm(f => ({ ...f, Material: e.target.value }))} placeholder="Enter Material" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Start Time</FormLabel>
-                <DateTimePicker
-                  value={addForm.StartTime}
-                  onChange={(date) => setAddForm(f => ({ ...f, StartTime: date }))}
-                  placeholder="Select Start Time"
-                  showTime={true}
-                  dateFormat="dd/MM/yyyy h:mm aa"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel required>End Time</FormLabel>
-                <DateTimePicker
-                  value={addForm.EndTime}
-                  onChange={(date) => setAddForm(f => ({ ...f, EndTime: date }))}
-                  placeholder="Select End Time"
-                  showTime={true}
-                  dateFormat="dd/MM/yyyy h:mm aa"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setAddOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: 'var(--form-border)', color: 'var(--text-color)' }}>Cancel</button>
-              <button onClick={handleAddSubmit} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--submit-button-bg)', color: '#000' }}>{saving ? 'Saving...' : 'Save'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Refactored Modals */}
+      <AddGradeChangeModal
+        isOpen={addOpen}
+        onClose={() => setAddOpen(false)}
+        addForm={addForm}
+        setAddForm={setAddForm}
+        plants={plants}
+        addFormLines={addFormLines}
+        setAddFormLines={setAddFormLines}
+        handleAddSubmit={handleAddSubmit}
+        saving={saving}
+      />
 
-      {editOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-[500px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Edit Grade Change</h2>
-              <button onClick={() => setEditOpen(false)} className="hover:opacity-70" style={{ color: 'var(--card-subtle)' }}><X size={20} /></button>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <FormLabel>Resource</FormLabel>
-                <TextInput value={editForm.ResourceCode} disabled />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel>Posting Date</FormLabel>
-                <TextInput value={editForm.PostingDate} disabled />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel>Start Time</FormLabel>
-                <TextInput type="time" value={editForm.StartTime} onChange={(e) => setEditForm(f => ({ ...f, StartTime: e.target.value }))} />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel>Stop Time</FormLabel>
-                <TextInput type="time" value={editForm.StopTime} onChange={(e) => setEditForm(f => ({ ...f, StopTime: e.target.value }))} />
-              </div>
-              <div className="col-span-2 flex flex-col gap-1">
-                <FormLabel>Material</FormLabel>
-                <TextInput value={editForm.Material} onChange={(e) => setEditForm(f => ({ ...f, Material: e.target.value }))} />
-              </div>
-              <div className="col-span-2 flex flex-col gap-1">
-                <FormLabel>Reason (GRUND)</FormLabel>
-                <SelectInput options={reasons} value={editForm.GRUND} onChange={(e) => setEditForm(f => ({ ...f, GRUND: e.target.value }))} placeholder="Select Reason" />
-              </div>
-              <div className="col-span-2 flex flex-col gap-1">
-                <FormLabel>Remarks</FormLabel>
-                <TextInput value={editForm.Remarks} onChange={(e) => setEditForm(f => ({ ...f, Remarks: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setEditOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: 'var(--form-border)', color: 'var(--text-color)' }}>Cancel</button>
-              <button onClick={handleSaveEdit} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--submit-button-bg)', color: '#000' }}>{saving ? 'Saving...' : 'Save'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <EditGradeChangeModal
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        editForm={editForm}
+        setEditForm={setEditForm}
+        reasons={reasons}
+        handleSaveEdit={handleSaveEdit}
+        saving={saving}
+      />
 
-      {mergeDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-[400px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>
-            <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Select Material for Merged Record</h2>
-            <p className="text-sm" style={{ color: 'var(--text-color)' }}>The two selected records have different materials. Choose which material to keep:</p>
-            <div className="flex flex-col gap-1">
-              <FormLabel>Material</FormLabel>
-              <SelectInput options={selectedRows.map(r => ({ label: r.Material, value: r.Material }))} value={mergeMaterial} onChange={(e) => setMergeMaterial(e.target.value)} />
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setMergeDialogOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: 'var(--form-border)', color: 'var(--text-color)' }}>Cancel</button>
-              <button onClick={() => doMerge(mergeMaterial)} className="px-4 py-2 rounded-lg text-sm font-medium bg-orange-500 text-white">Merge</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <MergeGradeChangeModal
+        isOpen={mergeDialogOpen}
+        onClose={() => setMergeDialogOpen(false)}
+        selectedRows={selectedRows}
+        mergeMaterial={mergeMaterial}
+        setMergeMaterial={setMergeMaterial}
+        doMerge={doMerge}
+      />
 
-      {openEventsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-[800px] max-h-[80vh] rounded-2xl p-6 shadow-2xl flex flex-col gap-4 overflow-hidden" style={{ background: 'var(--modal-bg)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Open Events</h2>
-              <button onClick={() => setOpenEventsOpen(false)} className="hover:opacity-70" style={{ color: 'var(--card-subtle)' }}><X size={20} /></button>
-            </div>
-            <div className="overflow-auto flex-1 border rounded-lg" style={{ borderColor: 'var(--form-border)' }}>
-              {openEventsLoading ? (
-                <div className="p-8 text-center">Loading...</div>
-              ) : (
-                <Table1
-                  columns={[
-                    { key: 'ResourceCode', label: 'Resource' },
-                    { key: 'Material', label: 'Material' },
-                    { key: 'StartTime', label: 'Start Time', render: (v) => fmtTime(v) },
-                    { key: 'StopTime', label: 'Stop Time', render: (v) => fmtTime(v) },
-                    { key: 'Duration', label: 'Duration' },
-                    { key: 'Line', label: 'Line' },
-                  ]}
-                  data={openEventsRows}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <OpenEventsModal
+        isOpen={openEventsOpen}
+        onClose={() => setOpenEventsOpen(false)}
+        openEventsLoading={openEventsLoading}
+        openEventsRows={openEventsRows}
+      />
+
+      <ShiftDurationModal
+        isOpen={shiftDurationModalOpen}
+        onClose={() => setShiftDurationModalOpen(false)}
+        shiftDurationLoading={shiftDurationLoading}
+        shiftDurationData={shiftDurationData}
+        handleSaveShiftDuration={handleSaveShiftDuration}
+        saving={saving}
+      />
     </div>
   );
 }

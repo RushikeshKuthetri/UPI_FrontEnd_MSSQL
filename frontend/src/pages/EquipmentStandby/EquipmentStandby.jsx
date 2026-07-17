@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import {
-  Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Grid, Alert, Snackbar, Chip, MenuItem, Table, TableHead, TableBody,
+import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Grid, Chip, MenuItem, Table, TableHead, TableBody,
   TableRow, TableCell, Paper, CircularProgress, IconButton, Tooltip,
 } from '@mui/material';
 import { Edit as EditIcon, Search, FileUpload, Send, EventNote } from '@mui/icons-material';
@@ -27,7 +26,6 @@ export default function EquipmentStandby() {
   };
   const [plants, setPlants]   = useState([]);
   const [lines, setLines]     = useState([]);
-  const [snack, setSnack]     = useState({ open: false, msg: '', severity: 'success' });
 
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -87,7 +85,7 @@ export default function EquipmentStandby() {
     setSaving(true);
     try {
       await api.put('/equipment-standby/update', editForm);
-      showSnack('Record updated successfully', 'success');
+      showSnack('Record updated successfully.', 'success');
       setEditOpen(false);
       fetchData();
     } catch (err) {
@@ -146,7 +144,7 @@ export default function EquipmentStandby() {
     }
   };
 
-  const showSnack = (msg, severity = 'success') => setSnack({ open: true, msg, severity });
+  const showSnack = (msg) => alert(msg);
 
   const TH = ({ children }) => (
     <TableCell sx={{ fontWeight: 700, bgcolor: '#fe8f12', color: '#fff', whiteSpace: 'nowrap' }}>
@@ -370,13 +368,6 @@ export default function EquipmentStandby() {
         </DialogActions>
       </Dialog>
 
-      {/* ── Snackbar ── */}
-      <Snackbar open={snack.open} autoHideDuration={5000}
-        onClose={() => setSnack((s) => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
-          {snack.msg}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

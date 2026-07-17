@@ -8,8 +8,10 @@ import ResetButton from '../../components/Common/Form/Buttons/ResetButton';
 import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import Table1 from '../../components/Common/Table/Table';
 import PoDetailsModal from '../../components/Common/Modals/PoDetailsModal';
+import ReverseRecordModal from '../../components/common/Modals/ReverseRecordModal';
+import TextInput from '../../components/Common/Form/Inputs/TextInput';
+import BackButton from '../../components/Common/Form/Buttons/BackButton';
 import { Eye, SquarePen, Undo2, Check, X } from 'lucide-react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Alert, Snackbar } from '@mui/material';
 import api from '../../api/axios';
 import { FaExchangeAlt } from "react-icons/fa";
 
@@ -36,7 +38,6 @@ export default function ProcessOrder() {
   const [singleRow, setSingleRow] = useState(null);
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
-  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
   const [isUploadEnabled, setIsUploadEnabled] = useState(false);
 
   // Inline edit state
@@ -110,11 +111,11 @@ export default function ProcessOrder() {
     setSaving(true);
     try {
       await api.post('/po-reversal/reverse', { Id: singleRow.Id, Reason: reason || 'Manual reversal' });
-      setSnack({ open: true, msg: 'Record reversed successfully', severity: 'success' });
+      alert('Record reversed successfully');
       setConfirmOpen(false);
       fetchData();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Reversal failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Reversal failed');
     } finally {
       setSaving(false);
     }
@@ -157,12 +158,12 @@ export default function ProcessOrder() {
         Remarks: editValues.Remarks,
       };
       await api.put('/process-order/update', payload);
-      setSnack({ open: true, msg: 'Record updated successfully', severity: 'success' });
+      alert('Record updated successfully.');
       setEditingIndex(null);
       setEditValues({});
       fetchData();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Update failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Update failed');
     } finally {
       setEditSaving(false);
     }
@@ -193,6 +194,22 @@ export default function ProcessOrder() {
     />
   );
 
+  const UOM_OPTIONS = ['MT', 'KWH', 'L'];
+
+  const renderEditableSelect = (field, widthClass = 'w-[90px]', label = '') => (
+    <select
+      value={editValues[field] ?? ''}
+      onChange={(e) => handleEditChange(field, e.target.value)}
+      style={inlineInputStyle}
+      className={`${widthClass} focus:border-[#8A38F5]`}
+    >
+      <option value="">-- Select {label} --</option>
+      {UOM_OPTIONS.map(opt => (
+        <option key={opt} value={opt}>{opt}</option>
+      ))}
+    </select>
+  );
+
   const columns = [
     { key: 'Resource', label: 'Resource' },
     { key: 'ProcessOrder', label: 'Process Order', render: (_, r) => r.ProcessOrder || r.OrderNo || '-' },
@@ -215,28 +232,28 @@ export default function ProcessOrder() {
       key: 'UOM', label: 'UOM',
       render: (_, r, idx) =>
         editingIndex === idx
-          ? renderEditableCell('UOM', 'w-[70px]')
+          ? renderEditableSelect('UOM', 'w-[100px]', 'UOM')
           : (r.UOM || '-'),
     },
     {
       key: 'ISOUOM', label: 'ISOUOM',
       render: (_, r, idx) =>
         editingIndex === idx
-          ? renderEditableCell('ISOUOM', 'w-[70px]')
+          ? renderEditableSelect('ISOUOM', 'w-[100px]', 'ISO UOM')
           : (r.ISOUOM || '-'),
     },
     {
       key: 'Unit1', label: 'Unit 1',
       render: (_, r, idx) =>
         editingIndex === idx
-          ? renderEditableCell('Unit1', 'w-[70px]')
+          ? renderEditableSelect('Unit1', 'w-[100px]', 'Unit 1')
           : (r.Unit1UOM || r.Unit1 || r.Goods || '-'),
     },
     {
       key: 'ISOUnit1', label: 'ISOUnit 1',
       render: (_, r, idx) =>
         editingIndex === idx
-          ? renderEditableCell('ISOUnit1', 'w-[70px]')
+          ? renderEditableSelect('ISOUnit1', 'w-[100px]', 'ISO Unit 1')
           : (r.Unit1ISO || r.ISOUnit1 || '-'),
     },
     {
@@ -350,46 +367,18 @@ export default function ProcessOrder() {
       )}
 
       {/* Confirmation Dialog for Reversal */}
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: 'error.main', fontSize: '18px', fontWeight: 600 }}>
-          Reverse Record
-        </DialogTitle>
-        <DialogContent>
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            This will mark the selected record as reversed and create a reversal entry. This action cannot be undone.
-          </Alert>
-          {singleRow && (
-            <div className="mb-4 p-3 bg-[var(--input-disable-bg)] text-[var(--text-color)] rounded-md text-[13px] border border-[var(--form-border)]">
-              <strong>Plant:</strong> {singleRow.WERKS || singleRow.Plant} | <strong>Resource:</strong> {singleRow.Resource} |
-              <strong> Material:</strong> {singleRow.Material} | <strong>Line:</strong> {singleRow.Line || singleRow.Operation} |
-              <strong> Qty:</strong> {singleRow.Quantity || singleRow.Yield} {singleRow.UOM}
-            </div>
-          )}
-          <TextField
-            fullWidth label="Reason for Reversal" multiline rows={2} size="small"
-            value={reason} onChange={(e) => setReason(e.target.value)}
-            placeholder="e.g. Incorrect quantity posted"
-            sx={{
-              '& .MuiInputBase-root': { color: 'var(--text-color)', bgcolor: 'var(--input-enable-bg)' },
-              '& .MuiInputLabel-root': { color: 'var(--text-color)' },
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--form-border)' }
-            }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 2, pt: 0 }}>
-          <Button onClick={() => setConfirmOpen(false)} sx={{ color: 'var(--text-color)' }}>Cancel</Button>
-          <Button variant="contained" color="error" startIcon={<Undo2 size={16} />} onClick={handleConfirmReverse} disabled={saving}>
-            {saving ? 'Processing...' : 'Confirm Reversal'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ReverseRecordModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        singleRow={singleRow}
+        reason={reason}
+        setReason={setReason}
+        saving={saving}
+        handleConfirmReverse={handleConfirmReverse}
+      />
 
       {/* View Details Modal */}
       <PoDetailsModal isOpen={isPoModalOpen} onClose={() => setIsPoModalOpen(false)} isUploadEnabled={isUploadEnabled} selectedRow={singleRow} />
-
-      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))}>{snack.msg}</Alert>
-      </Snackbar>
     </div>
   );
 }

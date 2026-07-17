@@ -10,7 +10,7 @@ const SearchBar = ({ value, onChange, placeholder = "Search...", width = "w-[180
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`bg-transparent outline-none ${width} text-sm text-[var(--text-color)] placeholder-[var(--search-placeholder)]`}
+        className={`bg-transparent outline-none ${width} py-1 text-sm text-[var(--text-color)] placeholder-[var(--search-placeholder)]`}
       />
     </div>
   );

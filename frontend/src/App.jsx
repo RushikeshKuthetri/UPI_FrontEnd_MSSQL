@@ -1,5 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import CustomAlertDialog from './components/Common/Modals/CustomAlertDialog';
+import useAlertStore from './store/alertStore';
+
+// Override native window.alert globally
+window.alert = (message) => {
+  useAlertStore.getState().showAlert(message, 'Message');
+};
 import Layout from './components/Layout/Layout';
 import Login from './pages/Login/Login';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -40,6 +47,7 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <CustomAlertDialog />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />

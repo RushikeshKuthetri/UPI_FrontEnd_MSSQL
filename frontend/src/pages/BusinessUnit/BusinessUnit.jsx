@@ -5,9 +5,9 @@ import TextInput from '../../components/Common/Form/Inputs/TextInput';
 import ActionButton from '../../components/Common/Form/Buttons/ActionButton';
 import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import Table1 from '../../components/Common/Table/Table';
+import BusinessUnitModal from '../../components/common/Modals/BusinessUnitModal';
 import { Plus, SquarePen, Search, X } from 'lucide-react';
 import api from '../../api/axios';
-import { Snackbar, Alert } from '@mui/material';
 import { IoSettingsOutline } from "react-icons/io5";
 import SearchBar from '../../components/Common/SearchBar/SearchBar';
 
@@ -15,7 +15,6 @@ export default function BusinessUnit() {
   const [rows, setRows] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
-  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
 
   // Modal
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -88,63 +87,14 @@ export default function BusinessUnit() {
       </div>
 
       {/* Add/Edit Modal */}
-      {dialogOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={e => e.target === e.currentTarget && setDialogOpen(false)}
-        >
-          <div className="relative w-[500px] max-w-[95vw] rounded-2xl px-8 py-6 shadow-2xl flex flex-col" style={{ background: 'var(--modal-bg, #F9FAFB)' }}>
-            <button onClick={() => setDialogOpen(false)} className="absolute top-4 right-4 transition hover:opacity-70 text-[var(--text-color)]">
-              <X size={20} />
-            </button>
-
-            <div className="flex items-center justify-center mb-6 mt-2">
-              <Title label={editMode ? "Edit Business Unit" : "Add Business Unit"} />
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <FormLabel required>BU Code</FormLabel>
-                <TextInput
-                  placeholder="Enter BU Code"
-                  value={form.BUCode}
-                  onChange={e => setForm({ ...form, BUCode: e.target.value })}
-                  disabled={editMode}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Short Name</FormLabel>
-                <TextInput
-                  placeholder="Enter Short Name"
-                  value={form.ShortName}
-                  onChange={e => setForm({ ...form, ShortName: e.target.value })}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel>BU Name</FormLabel>
-                <TextInput
-                  placeholder="Enter BU Name"
-                  value={form.BUName}
-                  onChange={e => setForm({ ...form, BUName: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setDialogOpen(false)} className="px-4 py-1.5 rounded-md border border-[var(--form-border)] text-sm font-medium hover:bg-[var(--button-hover-bg)] text-[var(--text-color)] transition">Close</button>
-              <SubmitButton onClick={() => {
-                setSnack({ open: true, msg: editMode ? 'Business Unit updated' : 'Business Unit added', severity: 'success' });
-                setDialogOpen(false);
-                fetchData();
-              }}>Save</SubmitButton>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack(s => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack(s => ({ ...s, open: false }))}>{snack.msg}</Alert>
-      </Snackbar>
+      <BusinessUnitModal
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        editMode={editMode}
+        form={form}
+        setForm={setForm}
+        fetchData={fetchData}
+      />
     </div>
   );
 }

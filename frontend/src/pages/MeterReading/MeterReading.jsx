@@ -81,7 +81,8 @@ export default function MeterReading() {
       const apiP = { ...filters, startDate: filters.postingDate, endDate: filters.postingDate, limit: 200 };
       const { data } = await api.get('/meter-reading/list', { params: apiP });
       setRows(data.data || []);
-    } catch {
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to fetch data');
       setRows([]);
     } finally {
       setLoading(false);
@@ -107,7 +108,6 @@ export default function MeterReading() {
         line: filters.line,
       });
       alert(data.message || 'Calculation completed');
-      // Refresh the table data after calculation
       fetchData();
     } catch (err) {
       alert(err.response?.data?.message || 'Calculation failed');
@@ -125,7 +125,7 @@ export default function MeterReading() {
     fd.append('file', file);
     try {
       const { data } = await api.post('/meter-reading/upload', fd);
-      alert(data.message);
+      alert(data.message || 'Upload successful');
       setIsUploadModalOpen(false);
       fetchData();
     } catch (err) {
@@ -144,9 +144,10 @@ export default function MeterReading() {
         MeterReading: editValue
       });
       setEditingRowId(null);
+      alert('Meter reading updated manually');
       fetchData();
     } catch (err) {
-      console.error(err.response?.data?.message || 'Update failed');
+      alert(err.response?.data?.message || 'Update failed');
     } finally {
       setSaving(false);
     }

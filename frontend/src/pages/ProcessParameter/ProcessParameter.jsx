@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   Box, Typography, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField, Grid, Alert, Snackbar,
+  DialogActions, TextField, Grid,
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import api from '../../api/axios';
@@ -32,7 +32,6 @@ export default function ProcessParameter() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
-  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
   const [isUploadEnabled, setIsUploadEnabled] = useState(false);
 
   useEffect(() => {
@@ -64,17 +63,17 @@ export default function ProcessParameter() {
     const fd = new FormData(); fd.append('file', file);
     try {
       const { data } = await api.post('/process-parameter/upload', fd);
-      setSnack({ open: true, msg: data.message, severity: 'success' }); fetchData(page);
-    } catch (err) { setSnack({ open: true, msg: err.response?.data?.message || 'Upload failed', severity: 'error' }); }
+      alert(data.message); fetchData(page);
+    } catch (err) { alert(err.response?.data?.message || 'Upload failed'); }
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await api.post('/process-parameter/manual', form);
-      setSnack({ open: true, msg: 'Process parameter saved', severity: 'success' });
+      alert('Process parameter saved');
       setDialogOpen(false); setForm(EMPTY_FORM); fetchData(page);
-    } catch (err) { setSnack({ open: true, msg: err.response?.data?.message || 'Save failed', severity: 'error' }); }
+    } catch (err) { alert(err.response?.data?.message || 'Save failed'); }
     finally { setSaving(false); }
   };
 
@@ -117,10 +116,6 @@ export default function ProcessParameter() {
           <Button variant="contained" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
         </DialogActions>
       </Dialog>
-
-      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))}>{snack.msg}</Alert>
-      </Snackbar>
     </Box>
   );
 }

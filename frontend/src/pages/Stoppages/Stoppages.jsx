@@ -8,8 +8,14 @@ import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import ActionButton from '../../components/Common/Form/Buttons/ActionButton';
 import IconButton from '../../components/Common/Form/Buttons/IconButton';
 import TextInput from '../../components/Common/Form/Inputs/TextInput';
+import BackButton from '../../components/Common/Form/Buttons/BackButton';
+import NextButton from '../../components/Common/Form/Buttons/NextButton';
 import Table1 from '../../components/Common/Table/Table';
 import UploadFileModal from '../../components/Common/Modals/UploadFileModal';
+import AddStoppageModal from '../../components/common/Modals/AddStoppageModal';
+import EditStoppageModal from '../../components/common/Modals/EditStoppageModal';
+import SplitStoppageModal from '../../components/common/Modals/SplitStoppageModal';
+import OpenEventsStoppageModal from '../../components/common/Modals/OpenEventsStoppageModal';
 import SearchBar from '../../components/Common/SearchBar/SearchBar';
 import { CalendarCheck, ClockFading, SendHorizontal, Split, SquarePen, Upload, X, Trash2, Plus, PersonStanding } from 'lucide-react';
 import api from '../../api/axios';
@@ -162,7 +168,7 @@ export default function Stoppages() {
     setSaving(true);
     try {
       await api.put('/stoppages/update', editForm);
-      alert('Record updated successfully');
+      alert('Record updated successfully.');
       setEditOpen(false);
       fetchData();
     } catch (err) {
@@ -449,205 +455,49 @@ export default function Stoppages() {
       />
       <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden onChange={(e) => { if (e.target.files[0]) handleUpload(e.target.files[0]); e.target.value = ''; }} />
 
-      {/* Tailwind Modals */}
-      {addOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-[500px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Add Stoppage Entry</h2>
-              <button onClick={() => setAddOpen(false)} className="hover:opacity-70" style={{ color: 'var(--card-subtle)' }}><X size={20} /></button>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Plant (WERKS)</FormLabel>
-                <SelectInput
-                  options={plants.map(p => ({ label: p.PlantName || p.PlantCode, value: p.PlantCode }))}
-                  value={addForm.WERKS}
-                  onChange={(e) => {
-                    const pc = e.target.value;
-                    setAddForm(f => ({ ...f, WERKS: pc, Line: '' }));
-                    if (pc) {
-                      api.get('/stoppages/lines', { params: { plantCode: pc } })
-                        .then(({ data }) => setAddFormLines(data.map(l => ({ label: l.Descr || l.UnitCode, value: l.UnitCode }))))
-                        .catch(() => setAddFormLines([]));
-                    } else {
-                      setAddFormLines([]);
-                    }
-                  }}
-                  placeholder="Select Plant"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Line</FormLabel>
-                <SelectInput
-                  options={addFormLines}
-                  value={addForm.Line}
-                  onChange={(e) => setAddForm(f => ({ ...f, Line: e.target.value }))}
-                  placeholder="Select Line"
-                />
-              </div>
-              <div className="flex flex-col gap-1 col-span-2">
-                <FormLabel required>Resource (ARBPL)</FormLabel>
-                <TextInput value={addForm.ARBPL} onChange={(e) => setAddForm(f => ({ ...f, ARBPL: e.target.value }))} placeholder="Enter Resource Name" />
-              </div>
-              <div className="flex flex-col gap-1 col-span-2">
-                <FormLabel>Material</FormLabel>
-                <TextInput value={addForm.Material} onChange={(e) => setAddForm(f => ({ ...f, Material: e.target.value }))} placeholder="Enter Material" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Start Time</FormLabel>
-                <DateTimePicker
-                  value={addForm.StartTime}
-                  onChange={(date) => setAddForm(f => ({ ...f, StartTime: date }))}
-                  placeholder="Select Start Time"
-                  showTime={true}
-                  dateFormat="dd/MM/yyyy h:mm aa"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel required>End Time</FormLabel>
-                <DateTimePicker
-                  value={addForm.EndTime}
-                  onChange={(date) => setAddForm(f => ({ ...f, EndTime: date }))}
-                  placeholder="Select End Time"
-                  showTime={true}
-                  dateFormat="dd/MM/yyyy h:mm aa"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setAddOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: 'var(--form-border)', color: 'var(--text-color)' }}>Cancel</button>
-              <button onClick={handleAddSubmit} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--submit-button-bg)', color: '#000' }}>{saving ? 'Saving...' : 'Save'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddStoppageModal
+        isOpen={addOpen}
+        onClose={() => setAddOpen(false)}
+        addForm={addForm}
+        setAddForm={setAddForm}
+        plants={plants}
+        addFormLines={addFormLines}
+        setAddFormLines={setAddFormLines}
+        handleAddSubmit={handleAddSubmit}
+        saving={saving}
+      />
 
-      {editOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-[500px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Edit Stoppage</h2>
-              <button onClick={() => setEditOpen(false)} className="hover:opacity-70" style={{ color: 'var(--card-subtle)' }}><X size={20} /></button>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <FormLabel>Resource</FormLabel>
-                <TextInput value={editForm.ARBPL} disabled />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel>Start Time</FormLabel>
-                <TextInput value={editForm.StartTime} disabled />
-              </div>
-              <div className="col-span-2 flex flex-col gap-1">
-                <FormLabel>Material</FormLabel>
-                <TextInput value={editForm.MATNR} onChange={(e) => setEditForm(f => ({ ...f, MATNR: e.target.value }))} />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel>Type</FormLabel>
-                <SelectInput options={types.map(t => ({ label: `${t.StoppageType} - ${t.Descr}`, value: t.StoppageType }))} value={editForm.StoppageType} onChange={(e) => setEditForm(f => ({ ...f, StoppageType: e.target.value }))} placeholder="Select Type" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel>Reason (GRUND)</FormLabel>
-                <SelectInput options={reasons.map(r => ({ label: `${r.GRUND} - ${r.GRDTX}`, value: r.GRUND }))} value={editForm.GRUND} onChange={(e) => setEditForm(f => ({ ...f, GRUND: e.target.value }))} placeholder="Select Reason" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel>Department</FormLabel>
-                <SelectInput options={depts.map(d => ({ label: `${d.ABTNR} - ${d.DESCR}`, value: d.ABTNR }))} value={editForm.ABTNR} onChange={(e) => setEditForm(f => ({ ...f, ABTNR: e.target.value }))} placeholder="Select Department" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormLabel>Equipment No</FormLabel>
-                <TextInput value={editForm.EQUNR} onChange={(e) => setEditForm(f => ({ ...f, EQUNR: e.target.value }))} />
-              </div>
-              <div className="col-span-2 flex flex-col gap-1">
-                <FormLabel>Remarks (max 30)</FormLabel>
-                <TextInput value={editForm.Remarks} maxLength={30} onChange={(e) => setEditForm(f => ({ ...f, Remarks: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setEditOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: 'var(--form-border)', color: 'var(--text-color)' }}>Cancel</button>
-              <button onClick={handleSaveEdit} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--submit-button-bg)', color: '#000' }}>{saving ? 'Saving...' : 'Save'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <EditStoppageModal
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        editForm={editForm}
+        setEditForm={setEditForm}
+        types={types}
+        reasons={reasons}
+        depts={depts}
+        handleSaveEdit={handleSaveEdit}
+        saving={saving}
+      />
 
-      {splitOpen && splitRow && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-[600px] rounded-2xl p-6 shadow-2xl flex flex-col gap-4" style={{ background: 'var(--modal-bg)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Split Stoppage</h2>
-              <button onClick={() => setSplitOpen(false)} className="hover:opacity-70" style={{ color: 'var(--card-subtle)' }}><X size={20} /></button>
-            </div>
-            <div className="p-3 bg-blue-50 text-blue-800 text-sm rounded border border-blue-200">
-              Resource: <strong>{splitRow.ARBPL}</strong> | Range: <strong>{splitRow.StartTime} &rarr; {splitRow.StopTime}</strong> | Duration: <strong>{splitRow.Duration}</strong>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center text-sm font-semibold mb-1">
-                <div className="w-10">#</div>
-                <div className="flex-1">Start Time</div>
-                <div className="flex-1">End Time</div>
-                <div className="flex-1">Duration</div>
-                <div className="w-10"></div>
-              </div>
-              {splitEntries.map((entry, idx) => (
-                <div key={idx} className="flex items-center gap-2 mb-2">
-                  <div className="w-10 text-sm">{idx + 1}</div>
-                  <div className="flex-1">
-                    <TextInput type="time" value={entry.startTime} disabled />
-                  </div>
-                  <div className="flex-1">
-                    <TextInput type="time" value={entry.endTime} onChange={(e) => handleSplitEndChange(idx, e.target.value)} />
-                  </div>
-                  <div className="flex-1 text-sm font-medium flex items-center px-2">
-                    {calcDur(entry.startTime, entry.endTime) || '—'}
-                  </div>
-                  <div className="w-10 flex justify-center">
-                    <button onClick={() => handleDeleteSplitRow(idx)} disabled={splitEntries.length <= 2} className="text-red-500 hover:text-red-700 disabled:opacity-50">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              <button onClick={handleAddSplitRow} className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800 mt-2 w-fit">
-                <Plus size={16} /> Add Row
-              </button>
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setSplitOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: 'var(--form-border)', color: 'var(--text-color)' }}>Cancel</button>
-              <button onClick={handleSaveSplit} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600">{saving ? 'Saving...' : 'Save Split'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SplitStoppageModal
+        isOpen={splitOpen}
+        onClose={() => setSplitOpen(false)}
+        splitRow={splitRow}
+        splitEntries={splitEntries}
+        handleSplitEndChange={handleSplitEndChange}
+        calcDur={calcDur}
+        handleDeleteSplitRow={handleDeleteSplitRow}
+        handleAddSplitRow={handleAddSplitRow}
+        handleSaveSplit={handleSaveSplit}
+        saving={saving}
+      />
 
-      {openEventsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-[800px] max-h-[80vh] rounded-2xl p-6 shadow-2xl flex flex-col gap-4 overflow-hidden" style={{ background: 'var(--modal-bg)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--title)' }}>Open Events</h2>
-              <button onClick={() => setOpenEventsOpen(false)} className="hover:opacity-70" style={{ color: 'var(--card-subtle)' }}><X size={20} /></button>
-            </div>
-            <div className="overflow-auto flex-1 border rounded-lg" style={{ borderColor: 'var(--form-border)' }}>
-              {openEventsLoading ? (
-                <div className="p-8 text-center">Loading...</div>
-              ) : (
-                <Table1
-                  columns={[
-                    { key: 'ARBPL', label: 'Resource' },
-                    { key: 'MATNR', label: 'Material' },
-                    { key: 'StartTime', label: 'Start Time' },
-                    { key: 'StopTime', label: 'Stop Time', render: () => 'Pending' },
-                    { key: 'Duration', label: 'Duration' },
-                    { key: 'Line', label: 'Line' },
-                  ]}
-                  data={openEventsRows}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <OpenEventsStoppageModal
+        isOpen={openEventsOpen}
+        onClose={() => setOpenEventsOpen(false)}
+        openEventsLoading={openEventsLoading}
+        openEventsRows={openEventsRows}
+      />
     </div>
   );
 }

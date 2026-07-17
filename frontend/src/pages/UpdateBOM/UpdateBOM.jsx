@@ -9,8 +9,8 @@ import ActionButton from '../../components/Common/Form/Buttons/ActionButton';
 import Table1 from '../../components/Common/Table/Table';
 import TextInput from '../../components/Common/Form/Inputs/TextInput';
 import BackButton from '../../components/Common/Form/Buttons/BackButton';
+import AddUpdateBOMModal from '../../components/common/Modals/AddUpdateBOMModal';
 import { Plus, X } from 'lucide-react';
-import { Alert, Snackbar } from '@mui/material';
 import api from '../../api/axios';
 import { FaExchangeAlt } from "react-icons/fa";
 import SearchBar from '../../components/Common/SearchBar/SearchBar';
@@ -33,7 +33,6 @@ export default function UpdateBOM() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_BOM);
   const [saving, setSaving] = useState(false);
-  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
 
   useEffect(() => {
     api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => { });
@@ -71,7 +70,7 @@ export default function UpdateBOM() {
 
   const handleSearch = async () => {
     if (!filter.plantCode || !filter.resource || !filter.material) {
-      setSnack({ open: true, msg: 'Select Plant, Resource and Material to search', severity: 'warning' });
+      alert('Select Plant, Resource and Material to search');
       return;
     }
     setLoading(true);
@@ -93,10 +92,10 @@ export default function UpdateBOM() {
         WERKS: row.WERKS, Resource: row.Resource, Material: row.Material,
         Goods: row.Goods, isVisible: !row.isVisible,
       });
-      setSnack({ open: true, msg: `Visibility ${!row.isVisible ? 'enabled' : 'disabled'} for ${row.Goods}`, severity: 'success' });
+      alert(`Visibility ${!row.isVisible ? 'enabled' : 'disabled'} for ${row.Goods}`);
       handleSearch();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Update failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Update failed');
     }
   };
 
@@ -105,19 +104,19 @@ export default function UpdateBOM() {
       params: { plant: form.WERKS, resource: form.Resource, material: form.Material, goods: form.Goods },
     });
     if (check.exists) {
-      setSnack({ open: true, msg: `BOM item already exists for Goods: ${form.Goods}`, severity: 'warning' });
+      alert(`BOM item already exists for Goods: ${form.Goods}`);
       return;
     }
 
     setSaving(true);
     try {
       await api.post('/update-bom', form);
-      setSnack({ open: true, msg: 'BOM item added successfully', severity: 'success' });
+      alert('BOM item added successfully');
       setDialogOpen(false);
       setForm(EMPTY_BOM);
       handleSearch();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Save failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Save failed');
     } finally {
       setSaving(false);
     }
@@ -233,7 +232,7 @@ export default function UpdateBOM() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div> */}
-        <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search Goods..." />
+        <SearchBar value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search Goods..." />
       </div>
 
       <div className="flex-1 min-h-0 w-full overflow-x-auto">
@@ -245,124 +244,15 @@ export default function UpdateBOM() {
       </div>
 
       {/* Add BOM Dialog */}
-      {dialogOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={(e) => e.target === e.currentTarget && setDialogOpen(false)}
-        >
-          <div
-            className="relative w-[600px] max-w-[95vw] rounded-2xl px-8 py-6 shadow-2xl flex flex-col"
-            style={{ background: 'var(--modal-bg, #F9FAFB)' }}
-          >
-            <button
-              onClick={() => setDialogOpen(false)}
-              className="absolute top-4 right-4 transition hover:opacity-70 text-gray-700"
-            >
-              <X size={20} />
-            </button>
-
-            <div className='flex items-center justify-center mb-6 mt-2'>
-              <Title label="Add BOM Item" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Resource</FormLabel>
-                <TextInput
-                  placeholder="Enter User Name"
-                  value={form.Resource}
-                  readOnly={true}
-                  className="bg-gray-50 text-gray-500"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Material</FormLabel>
-                <TextInput
-                  placeholder="Enter User ID"
-                  value={form.Material}
-                  readOnly={true}
-                  className="bg-gray-50 text-gray-500"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Movt Type</FormLabel>
-                <TextInput
-                  placeholder="Enter Contact No"
-                  type="number"
-                  value={form.MovementType}
-                  onChange={fForm('MovementType')}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Line</FormLabel>
-                <TextInput
-                  placeholder="Enter Line"
-                  value={form.Line}
-                  readOnly={true}
-                  className="bg-gray-50 text-gray-500"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Plant</FormLabel>
-                <SelectInput
-                  options={plants.map(p => ({ label: p.PlantName || p.PlantCode, value: p.PlantCode }))}
-                  value={form.WERKS}
-                  disabled={true}
-                  className="bg-gray-50 text-gray-500"
-                  placeholder="Select Plant"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <FormLabel required>BOM Material</FormLabel>
-                <TextInput
-                  placeholder="Enter BOM Materials"
-                  value={form.Goods}
-                  onChange={fForm('Goods')}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Weighfeeder</FormLabel>
-                <TextInput
-                type={'number'}
-                  placeholder="Enter Weighfeeder"
-                  value={form.WeighFeeder}
-                  onChange={fForm('WeighFeeder')}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <FormLabel required>Storage Location</FormLabel>
-                <TextInput
-                  placeholder="Enter Storage Location"
-                  value={form.StorageLocation}
-                  onChange={fForm('StorageLocation')}
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-8">
-              <BackButton onClick={() => setDialogOpen(false)} label="Close" />
-              <SubmitButton
-                onClick={handleSave}
-                disabled={saving || !form.Goods}
-                loading={saving}
-              >
-                Save
-              </SubmitButton>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))}>{snack.msg}</Alert>
-      </Snackbar>
+      <AddUpdateBOMModal
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        form={form}
+        fForm={fForm}
+        plants={plants}
+        saving={saving}
+        handleSave={handleSave}
+      />
     </div>
   );
 }

@@ -7,7 +7,6 @@ import SubmitButton from '../../components/Common/Form/Buttons/SubmitButton';
 import Table1 from '../../components/Common/Table/Table';
 
 import { Check, X } from 'lucide-react';
-import { Snackbar, Alert } from '@mui/material';
 import { FaExchangeAlt } from "react-icons/fa";
 import useAuthStore from '../../store/authStore';
 import api from '../../api/axios';
@@ -21,10 +20,11 @@ export default function ManualUpload() {
 
   const [form, setForm] = useState({ ModuleName: '', PlantCode: '', FromDate: null, ToDate: null, Remark: '' });
   const [saving, setSaving] = useState(false);
-  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
 
   useEffect(() => {
-    api.get('/users/plants').then(({ data }) => setPlants(data)).catch(() => { });
+    api.get('/users/plants').then(({ data }) => setPlants(data)).catch((err) => {
+      alert(err.response?.data?.message || 'Failed to load plants');
+    });
     fetchRequests();
   }, []);
 
@@ -43,12 +43,14 @@ export default function ManualUpload() {
         IsApprovedStatus: String(r.IsApproved).trim() === '1' ? 'Approved' : String(r.IsApproved).trim() === '0' ? 'Rejected' : 'Pending'
       }));
       setRequests(transformed);
-    }).catch(() => { });
+    }).catch((err) => {
+      alert(err.response?.data?.message || 'Failed to fetch pending requests');
+    });
   };
 
   const handleSubmit = async () => {
     if (!form.ModuleName || !form.PlantCode || !form.FromDate || !form.ToDate || !form.Remark) {
-      setSnack({ open: true, msg: 'Please fill all required fields', severity: 'warning' });
+      alert('Please fill all required fields');
       return;
     }
 
@@ -61,11 +63,11 @@ export default function ManualUpload() {
         ToDate: form.ToDate ? formatDate(form.ToDate) : null,
         Reason: form.Remark
       });
-      setSnack({ open: true, msg: 'Manual upload request submitted', severity: 'success' });
+      alert('Manual upload request submitted');
       setForm({ ModuleName: '', PlantCode: '', FromDate: null, ToDate: null, Remark: '' });
       fetchRequests();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Submission failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Submission failed');
     } finally {
       setSaving(false);
     }
@@ -76,23 +78,23 @@ export default function ManualUpload() {
   const handleApprove = async (row) => {
     try {
       await api.post('/manual-upload/approve', { PlantCode: row.PlantCode, ModuleName: row.ModuleName });
-      setSnack({ open: true, msg: 'Request approved', severity: 'success' });
+      alert('Request approved');
       
       fetchRequests();
     } catch (err) {
       console.log(err)
-      setSnack({ open: true, msg: err.response?.data?.message || 'Approval failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Approval failed');
     }
   };
 
   const handleReject = async (row) => {
     try {
       await api.post('/manual-upload/reject', { PlantCode: row.PlantCode, ModuleName: row.ModuleName });
-      setSnack({ open: true, msg: 'Request rejected', severity: 'success' });
+      alert('Request rejected');
       
       fetchRequests();
     } catch (err) {
-      setSnack({ open: true, msg: err.response?.data?.message || 'Rejection failed', severity: 'error' });
+      alert(err.response?.data?.message || 'Rejection failed');
     }
   };
 
@@ -240,10 +242,6 @@ export default function ManualUpload() {
       <div className="flex-1 min-h-0 w-full overflow-x-auto ">
         <Table1 columns={columns} data={requests} showPagination={true} />
       </div>
-
-      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))}>{snack.msg}</Alert>
-      </Snackbar>
     </div>
   );
 }

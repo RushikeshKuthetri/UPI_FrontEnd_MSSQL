@@ -20,6 +20,7 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
     storageLocation: '',
     batch: '',
     weighfeeder: '',
+    remarks: '',
   });
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
           storageLocation: editingRow.storageLocation || '',
           batch: editingRow.batch || '',
           weighfeeder: editingRow.correctWf !== undefined ? String(editingRow.correctWf) : '',
+          remarks: editingRow.ConfirmationText || editingRow.remarks || editingRow.Remarks || '',
         });
       } else if (selectedRow) {
         setForm({
@@ -49,6 +51,7 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
           storageLocation: '',
           batch: '',
           weighfeeder: '',
+          remarks: '',
         });
       }
     }
@@ -79,7 +82,6 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
     if (!form.material) newErrors.material = 'Material is required';
     if (!form.resource) newErrors.resource = 'Resource is required';
     if (!form.plant) newErrors.plant = 'Plant is required';
-    if (!form.postingDate) newErrors.postingDate = 'Posting Date is required';
     if (!form.bomMaterials) newErrors.bomMaterials = 'BOM Materials is required';
     if (!form.movtType) newErrors.movtType = 'Movt Type is required';
     if (!form.storageLocation) newErrors.storageLocation = 'Storage Location is required';
@@ -98,6 +100,7 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
           PostingDate: form.postingDate,
           BOMName: form.bomMaterials,
           Weighfeeder: form.weighfeeder,
+          ConfirmationText: form.remarks,
           line: form.processOrderNo
         };
 
@@ -116,6 +119,8 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
         onClose();
       } catch (error) {
         console.error('Failed to save BOM item:', error);
+        const msg = error.response?.data?.message || 'Failed to save BOM item';
+        alert(msg);
       }
     }
   };
@@ -188,7 +193,7 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
           </div>
 
           <div className="flex flex-col">
-            <FormLabel required>Posting Date</FormLabel>
+            <FormLabel>Posting Date</FormLabel>
             <DateTimePicker
               value={form.postingDate}
               onChange={handleDateChange}
@@ -252,6 +257,17 @@ const AddBomItemPOModal = ({ isOpen, onClose, onAddSuccess, selectedRow, editing
               onChange={handleChange}
               placeholder="Enter Weighfeeder"
               error={errors.weighfeeder}
+            />
+          </div>
+
+          <div className="flex flex-col col-span-2">
+            <FormLabel>Remarks</FormLabel>
+            <TextInput
+              name="remarks"
+              value={form.remarks}
+              onChange={handleChange}
+              placeholder="Enter Remarks"
+              error={errors.remarks}
             />
           </div>
         </div>
