@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Target, FileText, Globe, Folder, Upload, TableProperties, SquarePen, Split, Plus } from 'lucide-react';
+import { X, Target, FileText, Globe, Folder, Upload, TableProperties, SquarePen, Split, Plus, Search } from 'lucide-react';
 import Table1 from '../Table/Table';
+import SearchBar from '../SearchBar/SearchBar';
 import BackButton from '../Form/Buttons/BackButton';
 import AddBomItemPOModal from './AddBomItemPOModal';
 import SplitBomItemModal from './SplitBomItemModal';
@@ -20,6 +21,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
   const [loading, setLoading] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [splitRow, setSplitRow] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchDetails = async () => {
     if (!selectedRow) return;
@@ -99,6 +101,14 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
       ),
     },
   ];
+
+  const filteredData = detailsData.filter(item => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return Object.values(item).some(val => 
+      val && String(val).toLowerCase().includes(term)
+    );
+  });
 
   return (
     <div
@@ -197,7 +207,8 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
             setEditingRow(null);
             setIsAddBomItemOpen(true);
           }} />
-          <div className="flex items-center gap-4 var(--submit-button-bg)">
+          <div className="flex items-center gap-4">
+            <SearchBar value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search..." />
             {isUploadEnabled && (
               <IconButton icon={Upload} onClick={() => setIsUploadModalOpen(true)} tooltip="Upload Excel" />
             )}
@@ -211,7 +222,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
             {loading ? (
               <div className="flex justify-center items-center h-32">Loading...</div>
             ) : (
-              <Table1 columns={columns} data={[...detailsData].reverse()} />
+              <Table1 columns={columns} data={[...filteredData].reverse()} />
             )}
           </div>
         </div>

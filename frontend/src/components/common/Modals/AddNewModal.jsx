@@ -185,6 +185,7 @@ const AddNewModal = ({
               placeholder="dd/MM/yyyy"
               error={errors.stopDate}
               maxDate={new Date(new Date().getFullYear() + 10, 11, 31)}
+              minDate={new Date()}
             />
           </div>
 
@@ -287,6 +288,7 @@ const AddNewModal = ({
               placeholder="dd/MM/yyyy"
               error={errors.startDate}
               maxDate={new Date(new Date().getFullYear() + 10, 11, 31)}
+                minDate={new Date()}
             />
           </div>
 
