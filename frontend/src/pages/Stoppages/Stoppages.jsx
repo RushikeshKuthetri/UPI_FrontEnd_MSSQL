@@ -355,15 +355,34 @@ export default function Stoppages() {
         </div>
       ),
     },
+    // {
+    //   key: 'SAPStatus',
+    //   label: 'SAP Status',
+    //   render: (_, row) => (
+    //     <span className={`text-[12px] px-2 py-0.5 rounded-full ${row.SAPStatus === 'S' || row.IsTransferred ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-700 border border-gray-200'}`}>
+    //       {row.SAPStatus === 'S' || row.IsTransferred ? 'Uploaded' : 'Pending'}
+    //     </span>
+    //   ),
+    // },
     {
-      key: 'SAPStatus',
-      label: 'SAP Status',
-      render: (_, row) => (
-        <span className={`text-[12px] px-2 py-0.5 rounded-full ${row.SAPStatus === 'S' || row.IsTransferred ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-700 border border-gray-200'}`}>
-          {row.SAPStatus === 'S' || row.IsTransferred ? 'Uploaded' : 'Pending'}
-        </span>
-      ),
-    },
+  key: 'SAPStatus',
+  label: 'SAP Status',
+  render: (_, row) => {
+    const isUploaded = row.SAPStatus === 'S' || row.IsTransferred;
+
+    return (
+      <span
+        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+          isUploaded
+            ? 'bg-green-600 text-green-200'
+            : 'bg-red-600 text-red-200'
+        }`}
+      >
+        {isUploaded ? 'Uploaded' : 'Pending'}
+      </span>
+    );
+  },
+},
   ];
 
   return (

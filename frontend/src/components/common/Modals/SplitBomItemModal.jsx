@@ -174,11 +174,12 @@ const SplitBomItemModal = ({ isOpen, onClose, onAddSuccess, selectedRow }) => {
               <TextInput value={form.storageLocation} readOnly disabled />
             </div>
 
-            <div className="flex flex-col">
-              <FormLabel>Total Quantity</FormLabel>
-              <TextInput value={form.totalQuantity} readOnly disabled />
-            </div>
           </div>
+        </div>
+
+        <div className="mt-4 flex flex-col">
+          <FormLabel>Total Quantity</FormLabel>
+          <TextInput value={form.totalQuantity} readOnly disabled />
         </div>
 
         <hr className="my-6 border-[var(--border-color,#E5E7EB)]" />

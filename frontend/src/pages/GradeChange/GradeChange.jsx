@@ -388,15 +388,34 @@ export default function GradeChange() {
         </button>
       ),
     },
+    // {
+    //   key: 'SAPStatus',
+    //   label: 'SAP status',
+    //   render: (value) => (
+    //     <span className="text-sm" style={{ color: 'var(--text-color)' }}>
+    //       {value === 'S' ? 'Uploaded' : (value || '—')}
+    //     </span>
+    //   ),
+    // },
     {
-      key: 'SAPStatus',
-      label: 'SAP status',
-      render: (value) => (
-        <span className="text-sm" style={{ color: 'var(--text-color)' }}>
-          {value === 'S' ? 'Uploaded' : (value || '—')}
-        </span>
-      ),
-    },
+  key: 'SAPStatus',
+  label: 'SAP Status',
+  render: (value) => {
+    const isUploaded = value === 'S';
+
+    return (
+      <span
+        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+          isUploaded
+            ? 'bg-green-600 text-green-200'
+            : 'bg-red-600 text-red-200'
+        }`}
+      >
+        {isUploaded ? 'Uploaded' : 'Pending'}
+      </span>
+    );
+  },
+},
   ];
 
   const resourceColumns = [

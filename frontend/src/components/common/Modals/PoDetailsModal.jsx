@@ -77,7 +77,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
       label: 'Actions',
       render: (_, row) => (
         <div className="flex items-center justify-center gap-3">
-          <button 
+          <button
             className="text-[#8A38F5] hover:opacity-70 transition"
             onClick={() => {
               setEditingRow(row);
@@ -86,7 +86,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
           >
             <SquarePen size={15} strokeWidth={2.5} />
           </button>
-          <button 
+          <button
             className="text-[#20C997] hover:opacity-70 transition"
             onClick={() => {
               setSplitRow(row);
@@ -106,11 +106,11 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="relative w-[95vw] max-w-[1400px] max-h-[95vh] overflow-y-auto rounded-2xl px-6 py-6 shadow-2xl flex flex-col"
+        className="relative w-[95vw] max-w-[1400px] max-h-[95vh] overflow-hidden rounded-2xl px-6 py-6 shadow-2xl flex flex-col"
         style={{ background: 'var(--modal-bg, #F9FAFB)' }}
       >
         {/* Header */}
-        <div className="flex justify-between items-center mb-5">
+        <div className="flex justify-between items-center mb-5 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-1 h-5  rounded-full"></div>
 
@@ -126,7 +126,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
 
         {/* PO Info Card */}
         <div
-          className="rounded-xl border px-4 py-3 flex flex-wrap items-center justify-between mb-6 shadow-sm gap-y-4"
+          className="rounded-xl border px-4 py-3 flex flex-wrap items-center justify-between mb-6 shadow-sm gap-y-4 shrink-0"
           style={{ background: 'var(--card-bg, #FFF)', borderColor: 'var(--form-border, #E5E7EB)' }}
         >
           {/* Item 1 */}
@@ -192,7 +192,7 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
         </div>
 
         {/* Add Material & Tools Row */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4 shrink-0">
           <ActionButton icon={Plus} label="Add Material" onClick={() => {
             setEditingRow(null);
             setIsAddBomItemOpen(true);
@@ -206,16 +206,18 @@ const PoDetailsModal = ({ isOpen, onClose, isUploadEnabled, selectedRow }) => {
         </div>
 
         {/* Table Area */}
-        <div className="flex-grow w-full overflow-hidden">
-          {loading ? (
-            <div className="flex justify-center items-center h-32">Loading...</div>
-          ) : (
-            <Table1 columns={columns} data={[...detailsData].reverse()} />
-          )}
+        <div className="flex-1 min-h-[300px] w-full relative">
+          <div className="absolute inset-0 flex flex-col overflow-hidden">
+            {loading ? (
+              <div className="flex justify-center items-center h-32">Loading...</div>
+            ) : (
+              <Table1 columns={columns} data={[...detailsData].reverse()} />
+            )}
+          </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-end gap-3 mt-4">
+        <div className="flex justify-end gap-3 mt-4 shrink-0">
           <BackButton onClick={onClose} label="  Skip and Close" />
           <NextButton onClick={onClose} label="Validate and Close" className='' />
         </div>

@@ -62,11 +62,11 @@ export default function SplitStoppageModal({
               </div>
             </div>
           ))}
-          <button onClick={handleAddSplitRow} className="flex items-center gap-1 text-sm font-medium mt-2 w-fit transition hover:opacity-70" style={{ color: 'var(--submit-button-bg, #f97316)' }}>
+          <button onClick={handleAddSplitRow} className="flex items-center gap-1 text-sm font-medium  w-fit transition hover:opacity-70" style={{ color: 'var(--submit-button-bg, #f97316)' }}>
             <Plus size={16} /> Add Row
           </button>
         </div>
-        <div className="flex justify-end gap-3 mt-2">
+        <div className="flex justify-end gap-3 ">
           <BackButton onClick={onClose} label="Cancel" />
           <NextButton onClick={handleSaveSplit} disabled={saving} label={saving ? 'Saving...' : 'Save Split'} />
         </div>

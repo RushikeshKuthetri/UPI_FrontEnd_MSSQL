@@ -210,15 +210,34 @@ export default function MeterReading() {
         );
       },
     },
+    // {
+    //   key: 'sapStatus',
+    //   label: 'SAP status',
+    //   render: (_, row) => (
+    //     <span className="text-sm text-[var(--text-color)]">
+    //       {row.IsTransferred ? 'Uploaded' : 'Pending'}
+    //     </span>
+    //   ),
+    // },
     {
-      key: 'sapStatus',
-      label: 'SAP status',
-      render: (_, row) => (
-        <span className="text-sm text-[var(--text-color)]">
-          {row.IsTransferred ? 'Uploaded' : 'Pending'}
-        </span>
-      ),
-    },
+  key: 'sapStatus',
+  label: 'SAP Status',
+  render: (_, row) => {
+    const isUploaded = row.IsTransferred;
+
+    return (
+      <span
+        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+          isUploaded
+            ? 'bg-green-600 text-green-200'
+            : 'bg-red-600 text-red-200'
+        }`}
+      >
+        {isUploaded ? 'Uploaded' : 'Pending'}
+      </span>
+    );
+  },
+},
   ];
 
   return (

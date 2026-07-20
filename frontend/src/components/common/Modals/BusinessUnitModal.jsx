@@ -4,6 +4,7 @@ import Title from '../TitleAndLabel/Title';
 import FormLabel from '../TitleAndLabel/InputLabel';
 import TextInput from '../Form/Inputs/TextInput';
 import SubmitButton from '../Form/Buttons/SubmitButton';
+import BackButton from '../Form/Buttons/BackButton';
 
 export default function BusinessUnitModal({
   isOpen,
@@ -57,8 +58,8 @@ export default function BusinessUnitModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-1.5 rounded-md border border-[var(--form-border)] text-sm font-medium hover:bg-[var(--button-hover-bg)] text-[var(--text-color)] transition">Close</button>
+        <div className="flex justify-end gap-3 mt-4">
+               <BackButton onClick={onClose} label="Close" />
           <SubmitButton onClick={() => {
             alert(editMode ? 'Business Unit updated' : 'Business Unit added');
             onClose();

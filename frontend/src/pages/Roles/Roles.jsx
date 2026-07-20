@@ -94,7 +94,7 @@ export default function Roles() {
     {
       key: 'IsActive', label: 'Is Active',
       render: (val) => (
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${val ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${val ? 'bg-green-600 text-green-200' : 'bg-red-600 text-red-200'}`}>
           {val ? 'Active' : 'Inactive'}
         </span>
       ),
